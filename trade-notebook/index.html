@@ -1,0 +1,533 @@
+<title>売買シナリオ帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --sunk:#E8EAE5; --line:#D5D8D1;
+  --ink:#1B2127; --muted:#5E6770; --faint:#8A929A;
+  --accent:#1F4E5F; --accent-soft:#DCE7EA;
+  --up:#C23B2E; --up-soft:#F6E1DE;      /* 日本式: 上昇=赤 */
+  --down:#23794F; --down-soft:#DDEFE4;  /* 下落=緑 */
+  --warn:#A86A12; --warn-soft:#F5EAD6;
+  --zone-a:#C9DCE2; --zone-b:#B4CFD8; --zone-c:#9FC2CE; --zone-x:#EAD9C2;
+  --serif:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#12171B; --surface:#1A2126; --sunk:#232B31; --line:#303A41;
+    --ink:#E7EBEE; --muted:#A3ADB5; --faint:#76818A;
+    --accent:#7FB8C9; --accent-soft:#1F3440;
+    --up:#F07366; --up-soft:#3A2220; --down:#5CC48F; --down-soft:#173024;
+    --warn:#E0A64A; --warn-soft:#352A18;
+    --zone-a:#22404A; --zone-b:#2A4E5A; --zone-c:#335D6B; --zone-x:#40331F;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12171B; --surface:#1A2126; --sunk:#232B31; --line:#303A41;
+  --ink:#E7EBEE; --muted:#A3ADB5; --faint:#76818A;
+  --accent:#7FB8C9; --accent-soft:#1F3440;
+  --up:#F07366; --up-soft:#3A2220; --down:#5CC48F; --down-soft:#173024;
+  --warn:#E0A64A; --warn-soft:#352A18;
+  --zone-a:#22404A; --zone-b:#2A4E5A; --zone-c:#335D6B; --zone-x:#40331F;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h2{font-family:var(--serif);font-weight:800;font-size:17px;letter-spacing:.02em}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.label{font-size:11px;letter-spacing:.08em;color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* top bar */
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{font-family:var(--serif);font-size:22px;font-weight:800;letter-spacing:.04em}
+.brand span{color:var(--muted);font-size:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.tab.add{border-style:dashed;color:var(--muted)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr);gap:20px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.who .code{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.who h2{font-size:26px;margin-top:2px}
+.who .thesis{color:var(--muted);margin-top:8px;max-width:48ch}
+.price-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:14px}
+.price{font-family:var(--mono);font-size:34px;font-weight:600;letter-spacing:-.01em}
+.price small{font-size:14px;color:var(--muted);font-weight:400}
+.pdate{font-size:12px;color:var(--faint)}
+.pform{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.pform input{width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;align-self:start}
+.stat{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.stat .v{font-family:var(--mono);font-size:19px;font-weight:600}
+.stat .s{font-size:11px;color:var(--faint)}
+.signal{grid-column:1/-1;display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:8px;font-weight:500}
+.signal .dot{width:10px;height:10px;border-radius:50%;flex:none;background:currentColor}
+.sig-wait{background:var(--sunk);color:var(--muted)}
+.sig-zone{background:var(--accent-soft);color:var(--accent)}
+.sig-stop{background:var(--down-soft);color:var(--down)}
+.sig-target{background:var(--up-soft);color:var(--up)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.panel-h .label{font-size:11px}
+
+/* ladder */
+.ladder{position:relative;height:420px;margin-left:56px;margin-right:4px;border-left:1px solid var(--line)}
+.tick{position:absolute;left:-56px;width:48px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--faint);transform:translateY(-50%)}
+.gridline{position:absolute;left:0;right:0;border-top:1px dashed var(--line)}
+.zone{position:absolute;left:8px;right:0;border-radius:4px;padding:3px 8px;font-size:12px;display:flex;justify-content:space-between;gap:8px;overflow:hidden}
+.zone b{font-weight:700}
+.zone span{color:var(--muted);white-space:nowrap}
+.mark{position:absolute;left:0;right:0;border-top:2px solid;font-size:11px;padding-left:8px}
+.mark span{position:relative;top:-9px;background:var(--surface);padding:0 4px;font-family:var(--mono)}
+.mark.stop{border-color:var(--down);color:var(--down)}
+.mark.target{border-color:var(--up);color:var(--up);border-top-style:dotted}
+.mark.ref{border-color:var(--faint);color:var(--faint);border-top-width:1px;border-top-style:dotted}
+.now{position:absolute;left:-8px;right:0;height:0;border-top:2px solid var(--ink);z-index:3}
+.now span{position:absolute;right:0;top:-12px;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:12px;padding:1px 8px;border-radius:4px}
+
+/* scenarios */
+.scen{display:flex;flex-direction:column;gap:10px}
+.sc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;padding:12px;border:1px solid var(--line);border-radius:8px}
+.sc input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.sc h3{font-size:14px;font-weight:700}
+.sc .meta{grid-column:2;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.sc .meta .num{color:var(--ink)}
+.sc .cond{grid-column:2;font-size:13px}
+.sc.done{background:var(--sunk)}
+.sc.done h3{text-decoration:line-through;color:var(--muted)}
+.chip{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.live{background:var(--accent-soft);color:var(--accent)}
+.chip.bell{background:var(--warn-soft);color:var(--warn)}
+
+/* events */
+.next{display:flex;gap:14px;align-items:center;padding:12px 14px;background:var(--warn-soft);border-radius:8px}
+.next .d{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--warn);line-height:1}
+.next .d small{font-size:12px}
+.events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.ev{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ev .when{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ev .when b{display:block;font-size:14px;color:var(--ink)}
+.ev.past{opacity:.5}
+.ev .t{font-weight:700;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ev .x{font-size:13px;color:var(--muted)}
+
+/* lists */
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pc h3{font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.pc ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.pc.bear h3{color:var(--down)} .pc.bull h3{color:var(--up)}
+
+/* trades */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.06em;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line)}
+td.r,th.r{text-align:right}
+.tscroll{overflow-x:auto}
+.pos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pos div{display:flex;flex-direction:column}
+.pos .v{font-family:var(--mono);font-size:16px;font-weight:600}
+.meter{height:8px;background:var(--sunk);border-radius:999px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+.up{color:var(--up)} .down{color:var(--down)}
+form.inline{display:flex;flex-wrap:wrap;gap:6px;align-items:end}
+form.inline label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+form.inline input,form.inline select,textarea{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);min-width:0}
+form.inline input{width:110px}
+form.inline input.wide{width:220px}
+textarea{width:100%;min-height:70px;resize:vertical}
+
+/* notes */
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.note{border-left:3px solid var(--line);padding:4px 0 4px 12px}
+.note.bot{border-left-color:var(--warn)}
+.note .h{font-size:11px;color:var(--faint);display:flex;gap:8px;align-items:center}
+.note p{margin:2px 0 0;white-space:pre-wrap;font-size:13px}
+.linkbtn{background:none;border:0;color:var(--faint);font-size:11px;padding:0;text-decoration:underline}
+
+.empty{color:var(--muted);font-size:13px;padding:8px 0}
+.status{font-size:12px;color:var(--faint)}
+.sources{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.sources a{color:var(--accent)}
+.foot{font-size:12px;color:var(--faint)}
+.addbox{display:flex;flex-direction:column;gap:10px}
+
+@media (max-width:860px){
+  .hero,.grid,.pros-cons{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pos{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:no-preference){
+  .now{transition:top .4s ease}
+}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div class="brand"><h1>売買シナリオ帳</h1><span id="status" class="status">読み込み中…</span></div>
+    <nav class="tabs" id="tabs" aria-label="銘柄"></nav>
+  </header>
+
+  <section class="panel addbox" id="addStock" hidden>
+    <div class="panel-h"><h2>銘柄を追加</h2><button class="linkbtn" id="addCancel" type="button">閉じる</button></div>
+    <form class="inline" id="addForm">
+      <label>証券コード<input id="nCode" required pattern="[0-9A-Za-z]{4,5}" placeholder="8801"></label>
+      <label>銘柄名<input id="nName" class="wide" required placeholder="三井不動産"></label>
+      <button class="btn" type="submit">追加する</button>
+    </form>
+    <p class="foot">追加後の分析内容は、チャットで Claude に「この銘柄も分析してシナリオ帳に入れて」と頼むと書き込まれます。</p>
+  </section>
+
+  <main id="main"><p class="empty">データを読み込んでいます…</p></main>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    if (attrs) for (const [k,v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === 'class') n.className = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    for (const c of kids.flat()) if (c != null && c !== false) n.append(c instanceof Node ? c : String(c));
+    return n;
+  };
+  const yen = v => (v == null || isNaN(v)) ? '—' : Math.round(v).toLocaleString('ja-JP');
+  const yen1 = v => (v == null || isNaN(v)) ? '—' : Number(v).toLocaleString('ja-JP',{maximumFractionDigits:1});
+  const pct = v => (v == null || isNaN(v)) ? '—' : (v*100).toFixed(2)+'%';
+  const store = {
+    get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+    set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+  };
+  const jstToday = () => {
+    const d = new Date(Date.now() + 9*3600e3);
+    return d.toISOString().slice(0,10);
+  };
+  const daysUntil = iso => {
+    const a = Date.parse(jstToday()+'T00:00:00Z'), b = Date.parse(iso.slice(0,10)+'T00:00:00Z');
+    return Math.round((b-a)/864e5);
+  };
+  const fmtMD = iso => { const [y,m,d] = iso.slice(0,10).split('-'); return `${+m}/${+d}`; };
+  const wd = iso => '日月火水木金土'[new Date(iso.slice(0,10)+'T00:00:00Z').getUTCDay()];
+
+  const state = { db:null, stocks:[], events:[], trades:[], notes:[], sel: store.get('sel') || null, readOnly:false };
+  const setStatus = t => { $('#status').textContent = t; };
+
+  function stock(){ return state.stocks.find(s => s.id === state.sel) || state.stocks[0]; }
+
+  // ---------- render ----------
+  function renderTabs(){
+    const t = $('#tabs'); t.replaceChildren();
+    for (const s of state.stocks) {
+      t.append(el('button',{class:'tab',type:'button','aria-selected':String(stock() && s.id===stock().id),
+        onclick:()=>{ state.sel=s.id; store.set('sel',s.id); render(); }},
+        `${s.name} ${s.code}`));
+    }
+    if (state.db && !state.readOnly) t.append(el('button',{class:'tab add',type:'button',onclick:()=>{ $('#addStock').hidden=false; $('#nCode').focus(); }},'＋ 銘柄'));
+  }
+
+  function signalFor(s){
+    const p = s.price;
+    if (p == null) return {cls:'sig-wait', text:'株価が未入力です'};
+    if (s.stop != null && p < s.stop) return {cls:'sig-stop', text:`損切りライン ${yen(s.stop)}円を下回っています。撤退を検討する水準です`};
+    const t = (s.targets||[]).filter(x=>p>=x.price).sort((a,b)=>b.price-a.price)[0];
+    if (t) return {cls:'sig-target', text:`${t.label}（${yen(t.price)}円）に到達。利確を検討`};
+    const z = (s.zones||[]).find(z => p >= z.low && p <= z.high);
+    if (z) return {cls:'sig-zone', text:`${z.label}（${yen(z.low)}〜${yen(z.high)}円）の中にいます。条件を確認して判断`};
+    return {cls:'sig-wait', text:'どのゾーンにも入っていません。待機'};
+  }
+
+  function renderHero(s){
+    const p = s.price, f = s.fundamentals || {};
+    const pbr = (p && f.bps) ? p/f.bps : null;
+    const per = (p && f.eps) ? p/f.eps : null;
+    const yld = (p && f.dps) ? f.dps/p : null;
+    const floorYld = (f.doeFloor && pbr) ? f.doeFloor/pbr : null;
+    const sig = signalFor(s);
+
+    const pform = el('form',{class:'pform',onsubmit:async e=>{
+      e.preventDefault();
+      const v = parseFloat($('#pIn').value); if (!(v>0)) return;
+      const d = $('#pDate').value || jstToday();
+      await saveStock(s.id, {price:v, priceDate:d});
+    }},
+      el('input',{id:'pIn',type:'number',step:'0.1',min:'0',inputmode:'decimal',placeholder:'今日の株価','aria-label':'株価'}),
+      el('input',{id:'pDate',type:'date',value:jstToday(),'aria-label':'日付'}),
+      el('button',{class:'btn',type:'submit'},'株価を更新'));
+    if (state.readOnly || !state.db) pform.hidden = true;
+
+    return el('section',{class:'hero'},
+      el('div',{class:'who'},
+        el('div',{class:'code'},`${s.code}・${s.market||'東証プライム'}`),
+        el('h2',{},s.name),
+        s.thesis ? el('p',{class:'thesis'},s.thesis) : null,
+        el('div',{class:'price-row'},
+          el('div',{class:'price'}, yen1(p), el('small',{},' 円')),
+          el('div',{class:'pdate'}, s.priceDate ? `${s.priceDate} 時点` : '')),
+        pform),
+      el('div',{class:'stats'},
+        el('div',{class:'stat'},el('span',{class:'label'},'PBR'),el('span',{class:'v'},pbr?pbr.toFixed(2)+'倍':'—'),el('span',{class:'s'},f.bps?`BPS ${yen(f.bps)}円で計算`:'BPS未設定')),
+        el('div',{class:'stat'},el('span',{class:'label'},'PER（会社予想）'),el('span',{class:'v'},per?per.toFixed(1)+'倍':'—'),el('span',{class:'s'},f.eps?`EPS ${yen1(f.eps)}円で計算`:'EPS未設定')),
+        el('div',{class:'stat'},el('span',{class:'label'},'配当利回り'),el('span',{class:'v'},pct(yld)),el('span',{class:'s'},f.dps?`年${yen1(f.dps)}円で計算`:'配当未設定')),
+        el('div',{class:'stat'},el('span',{class:'label'},'DOE下限の利回り'),el('span',{class:'v'},pct(floorYld)),el('span',{class:'s'},f.doeFloor?`DOE ${(f.doeFloor*100).toFixed(0)}% ÷ PBR`:'—')),
+        el('div',{class:`signal ${sig.cls}`},el('span',{class:'dot'}),el('span',{},sig.text))
+      ));
+  }
+
+  function renderLadder(s){
+    const vals = [s.price, s.stop, ...(s.zones||[]).flatMap(z=>[z.low,z.high]), ...(s.targets||[]).map(t=>t.price), ...(s.refs||[]).map(r=>r.price)].filter(v=>v!=null);
+    if (!vals.length) return el('p',{class:'empty'},'ゾーンが未設定です');
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    const pad = (hi-lo)*0.06 || 20; lo -= pad; hi += pad;
+    const step = [10,20,25,50,100,200,500,1000].find(st => (hi-lo)/st <= 9) || 1000;
+    const y = v => ((hi - v)/(hi-lo))*100;
+    const L = el('div',{class:'ladder',role:'img','aria-label':'価格帯とエントリーゾーン'});
+    for (let v = Math.ceil(lo/step)*step; v <= hi; v += step) {
+      L.append(el('div',{class:'gridline',style:`top:${y(v)}%`}), el('div',{class:'tick',style:`top:${y(v)}%`},yen(v)));
+    }
+    const zc = ['var(--zone-a)','var(--zone-b)','var(--zone-c)','var(--zone-x)'];
+    (s.zones||[]).forEach((z,i)=>{
+      const top = y(z.high), h = Math.max(y(z.low)-top, 4);
+      L.append(el('div',{class:'zone',style:`top:${top}%;height:${h}%;background:${z.color?`var(--${z.color})`:zc[i%zc.length]}`},
+        el('b',{},z.label), el('span',{class:'num'},`${yen(z.low)}–${yen(z.high)}`)));
+    });
+    (s.refs||[]).forEach(r=>L.append(el('div',{class:'mark ref',style:`top:${y(r.price)}%`},el('span',{},`${r.label} ${yen1(r.price)}`))));
+    (s.targets||[]).forEach(t=>L.append(el('div',{class:'mark target',style:`top:${y(t.price)}%`},el('span',{},`${t.label} ${yen(t.price)}`))));
+    if (s.stop!=null) L.append(el('div',{class:'mark stop',style:`top:${y(s.stop)}%`},el('span',{},`損切り ${yen(s.stop)}`)));
+    if (s.price!=null) L.append(el('div',{class:'now',style:`top:${y(s.price)}%`},el('span',{},`現在 ${yen1(s.price)}`)));
+    return L;
+  }
+
+  function renderScenarios(s){
+    const box = el('div',{class:'scen'});
+    const today = jstToday();
+    (s.scenarios||[]).forEach((sc,i)=>{
+      const live = sc.from && sc.to && today >= sc.from && today <= sc.to;
+      const cb = el('input',{type:'checkbox',id:`sc-${i}`,checked:!!sc.done,disabled:state.readOnly||!state.db,
+        onchange:async e=>{
+          const next = (s.scenarios||[]).map((x,j)=> j===i ? {...x, done:e.target.checked} : x);
+          await saveStock(s.id,{scenarios:next});
+        }});
+      box.append(el('div',{class:'sc'+(sc.done?' done':'')},
+        cb,
+        el('label',{for:`sc-${i}`},el('h3',{},sc.title)),
+        el('div',{class:'meta'},
+          el('span',{},'時期 ',el('span',{class:'num'},sc.window||'—')),
+          el('span',{},'価格帯 ',el('span',{class:'num'},sc.range||'—')),
+          sc.alloc ? el('span',{},'配分 ',el('span',{class:'num'},sc.alloc)) : null,
+          live && !sc.done ? el('span',{class:'chip live'},'いまが判断期間') : null),
+        el('div',{class:'cond'},sc.cond||'')));
+    });
+    if (!box.children.length) box.append(el('p',{class:'empty'},'シナリオはまだありません'));
+    return box;
+  }
+
+  function renderEvents(s){
+    const evs = state.events.filter(e=>e.code===s.code).sort((a,b)=>a.date.localeCompare(b.date));
+    const today = jstToday();
+    const next = evs.find(e=>e.date.slice(0,10) >= today);
+    const frag = [];
+    if (next) {
+      const d = daysUntil(next.date);
+      frag.push(el('div',{class:'next'},
+        el('div',{class:'d'}, d===0?'今日':String(d), d===0?null:el('small',{},' 日後')),
+        el('div',{},el('div',{class:'label'},'次のイベント'),el('div',{style:'font-weight:700'},next.title))));
+    }
+    const ul = el('ul',{class:'events'});
+    for (const e of evs) {
+      const past = e.date.slice(0,10) < today;
+      ul.append(el('li',{class:'ev'+(past?' past':'')},
+        el('div',{class:'when'},el('b',{},`${fmtMD(e.date)}（${wd(e.date)}）`), e.time||''),
+        el('div',{},
+          el('div',{class:'t'}, e.title, e.tentative?el('span',{class:'chip'},'日付未確定'):null, e.notify?el('span',{class:'chip bell'},'通知あり'):null),
+          e.detail?el('div',{class:'x'},e.detail):null)));
+    }
+    if (!evs.length) ul.append(el('li',{class:'empty'},'イベントはまだありません'));
+    frag.push(ul);
+    return frag;
+  }
+
+  function renderTrades(s){
+    const tr = state.trades.filter(t=>t.code===s.code).sort((a,b)=>a.date.localeCompare(b.date));
+    let qty=0, cost=0, realized=0;
+    for (const t of tr) {
+      if (t.side==='buy'){ cost += t.price*t.qty; qty += t.qty; }
+      else { const avg = qty? cost/qty : 0; realized += (t.price-avg)*t.qty; cost -= avg*t.qty; qty -= t.qty; }
+    }
+    const avg = qty ? cost/qty : null;
+    const unreal = (qty && s.price) ? (s.price-avg)*qty : null;
+    const budget = s.budget || null;
+    const used = budget ? Math.min(cost/budget,1) : null;
+    const cls = v => v==null?'':(v>=0?'up':'down');
+
+    const pos = el('div',{class:'pos'},
+      el('div',{},el('span',{class:'label'},'保有株数'),el('span',{class:'v'},qty?qty.toLocaleString('ja-JP'):'0')),
+      el('div',{},el('span',{class:'label'},'平均取得単価'),el('span',{class:'v'},avg?yen1(avg):'—')),
+      el('div',{},el('span',{class:'label'},'含み損益'),el('span',{class:'v '+cls(unreal)},unreal==null?'—':(unreal>=0?'+':'')+yen(unreal))),
+      el('div',{},el('span',{class:'label'},'確定損益'),el('span',{class:'v '+cls(realized)},(realized>=0?'+':'')+yen(realized))));
+
+    const budgetRow = el('div',{},
+      el('div',{class:'panel-h'},el('span',{class:'label'},'予定資金の消化'),
+        el('span',{class:'num',style:'font-size:12px'}, budget?`${yen(cost)} / ${yen(budget)}円（${Math.round(used*100)}%）`:'予定資金が未設定')),
+      el('div',{class:'meter'},el('i',{style:`width:${used?used*100:0}%`})));
+
+    const table = el('table',{},
+      el('thead',{},el('tr',{},el('th',{},'日付'),el('th',{},'売買'),el('th',{class:'r'},'単価'),el('th',{class:'r'},'株数'),el('th',{},'メモ'),el('th',{}))),
+      el('tbody',{}, tr.length ? tr.map(t=>el('tr',{},
+        el('td',{class:'num'},t.date),
+        el('td',{class:t.side==='buy'?'up':'down'},t.side==='buy'?'買':'売'),
+        el('td',{class:'r num'},yen1(t.price)),
+        el('td',{class:'r num'},t.qty.toLocaleString('ja-JP')),
+        el('td',{},t.note||''),
+        el('td',{},state.readOnly?null:el('button',{class:'linkbtn',type:'button',onclick:()=>state.db.doc('trades/'+t.id).delete()},'削除'))))
+        : el('tr',{},el('td',{colspan:'6',class:'empty'},'売買記録はまだありません。エントリーしたら下から記録してください'))));
+
+    const form = el('form',{class:'inline',onsubmit:async e=>{
+      e.preventDefault();
+      const price = parseFloat($('#tPrice').value), q = parseInt($('#tQty').value,10);
+      if (!(price>0 && q>0)) return;
+      try {
+        await state.db.collection('trades').add({code:s.code,date:$('#tDate').value||jstToday(),side:$('#tSide').value,price,qty:q,note:$('#tNote').value.trim()});
+        $('#tPrice').value=''; $('#tQty').value=''; $('#tNote').value='';
+      } catch(err){ setStatus('保存できませんでした: '+(err.code||err)); }
+    }},
+      el('label',{},'日付',el('input',{id:'tDate',type:'date',value:jstToday()})),
+      el('label',{},'売買',el('select',{id:'tSide'},el('option',{value:'buy'},'買'),el('option',{value:'sell'},'売'))),
+      el('label',{},'単価',el('input',{id:'tPrice',type:'number',step:'0.1',min:'0',required:true})),
+      el('label',{},'株数',el('input',{id:'tQty',type:'number',step:'100',min:'1',required:true,placeholder:'100'})),
+      el('label',{},'メモ',el('input',{id:'tNote',class:'wide',placeholder:'シナリオ①の打診買い'})),
+      el('button',{class:'btn',type:'submit'},'記録する'));
+    if (state.readOnly || !state.db) form.hidden = true;
+
+    const bform = el('form',{class:'inline',onsubmit:async e=>{
+      e.preventDefault(); const v = parseFloat($('#bIn').value); if (v>0) await saveStock(s.id,{budget:v});
+    }}, el('label',{},'予定資金（円）',el('input',{id:'bIn',type:'number',step:'10000',min:'0',value:budget||''})), el('button',{class:'btn ghost sm',type:'submit'},'設定'));
+    if (state.readOnly || !state.db) bform.hidden = true;
+
+    return [pos, budgetRow, bform, el('div',{class:'tscroll'},table), form];
+  }
+
+  function renderNotes(s){
+    const ns = state.notes.filter(n=>n.code===s.code).sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+    const ul = el('ul',{class:'notes'});
+    for (const n of ns) ul.append(el('li',{class:'note'+(n.by==='claude'?' bot':'')},
+      el('div',{class:'h'}, el('span',{class:'num'},(n.at||'').replace('T',' ').slice(0,16)), n.by==='claude'?el('span',{class:'chip bell'},'Claude の定期チェック'):null,
+        state.readOnly?null:el('button',{class:'linkbtn',type:'button',onclick:()=>state.db.doc('notes/'+n.id).delete()},'削除')),
+      el('p',{},n.text)));
+    if (!ns.length) ul.append(el('li',{class:'empty'},'メモはまだありません'));
+    const form = el('form',{class:'addbox',onsubmit:async e=>{
+      e.preventDefault(); const t = $('#nText').value.trim(); if (!t) return;
+      try { await state.db.collection('notes').add({code:s.code,at:new Date(Date.now()+9*3600e3).toISOString().slice(0,16),by:'me',text:t}); $('#nText').value=''; }
+      catch(err){ setStatus('保存できませんでした: '+(err.code||err)); }
+    }}, el('textarea',{id:'nText',placeholder:'気づいたこと、決算の感想、ニュースなど'}), el('div',{},el('button',{class:'btn',type:'submit'},'メモを残す')));
+    if (state.readOnly || !state.db) form.hidden = true;
+    return [form, ul];
+  }
+
+  function render(){
+    // 入力途中の値を再描画で消さない
+    const keep = {}, focusId = document.activeElement && document.activeElement.id;
+    document.querySelectorAll('#main input[id],#main textarea[id],#main select[id]').forEach(n=>{ if (n.type!=='checkbox') keep[n.id]=n.value; });
+    renderTabs();
+    const m = $('#main'); m.replaceChildren();
+    queueMicrotask(()=>{
+      for (const [id,v] of Object.entries(keep)) { const n = document.getElementById(id); if (n && v !== '') n.value = v; }
+      if (focusId) { const f = document.getElementById(focusId); if (f && f.focus) f.focus(); }
+    });
+    const s = stock();
+    if (!s) { m.append(el('p',{class:'empty'}, state.db ? '銘柄がまだありません。右上の「＋ 銘柄」から追加してください。' : 'この表示ではデータベースに接続できません。claude.ai 上で開いてください。')); return; }
+
+    m.append(el('div',{style:'display:flex;flex-direction:column;gap:20px'},
+      renderHero(s),
+      el('div',{class:'grid'},
+        el('section',{class:'panel'},
+          el('div',{class:'panel-h'},el('h2',{},'価格帯マップ'),el('span',{class:'label'},'黒線＝現在値')),
+          renderLadder(s)),
+        el('section',{class:'panel'},
+          el('div',{class:'panel-h'},el('h2',{},'エントリーシナリオ'),el('span',{class:'label'},'実行したらチェック')),
+          renderScenarios(s),
+          s.exitNote ? el('p',{class:'foot'},s.exitNote) : null)),
+      el('div',{class:'grid'},
+        el('section',{class:'panel'},
+          el('div',{class:'panel-h'},el('h2',{},'イベントと通知'),el('span',{class:'label'},'通知は Claude の Routine から届きます')),
+          ...renderEvents(s)),
+        el('section',{class:'panel'},
+          el('div',{class:'panel-h'},el('h2',{},'ポジションと売買記録')),
+          ...renderTrades(s))),
+      el('section',{class:'panel'},
+        el('div',{class:'panel-h'},el('h2',{},'株価が動く理由'),el('span',{class:'label'},s.analyzedAt?`${s.analyzedAt} の分析`:'')),
+        el('div',{class:'pros-cons'},
+          el('div',{class:'pc bear'},el('h3',{},'▼ 下落要因'),el('ol',{},(s.bearish||[]).map(t=>el('li',{},t)))),
+          el('div',{class:'pc bull'},el('h3',{},'▲ 上昇要因'),el('ol',{},(s.bullish||[]).map(t=>el('li',{},t))))),
+        s.view ? el('p',{style:'margin:0;max-width:75ch'},el('b',{},'見立て　'),s.view) : null),
+      el('section',{class:'panel'},
+        el('div',{class:'panel-h'},el('h2',{},'メモと定期チェックの記録')),
+        ...renderNotes(s)),
+      (s.sources||[]).length ? el('div',{class:'sources'},el('span',{class:'label'},'出典'),(s.sources||[]).map(x=>el('a',{href:x.url,target:'_blank',rel:'noopener'},x.title))) : null,
+      el('p',{class:'foot'},'この帳面は自分用の記録です。投資判断はご自身の責任で行ってください。')
+    ));
+  }
+
+  async function saveStock(id, patch){
+    try { await state.db.doc('stocks/'+id).update(patch); setStatus('保存しました'); }
+    catch(err){
+      if (err && err.code==='invalid_argument') { state.readOnly = true; render(); setStatus('閲覧のみの権限です'); }
+      else setStatus('保存できませんでした: '+((err&&err.code)||err));
+    }
+  }
+
+  $('#addCancel').addEventListener('click',()=>{ $('#addStock').hidden = true; });
+  $('#addForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const code = $('#nCode').value.trim().toUpperCase(), name = $('#nName').value.trim();
+    if (!code || !name || !state.db) return;
+    try {
+      await state.db.doc('stocks/'+code).set({code,name,market:'東証',price:null,priceDate:null,zones:[],targets:[],refs:[],scenarios:[],bearish:[],bullish:[],fundamentals:{},sources:[]});
+      state.sel = code; store.set('sel',code);
+      $('#addStock').hidden = true; $('#nCode').value=''; $('#nName').value='';
+    } catch(err){ setStatus('追加できませんでした: '+(err.code||err)); }
+  });
+
+  render();
+
+  (async ()=>{
+    const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    if (!db) { setStatus('オフライン表示'); render(); return; }
+    state.db = db; setStatus('同期中');
+    const user = await window.claude.use('user');
+    if (user && user.can) { try { const c = await user.can('data.write'); if (c === false) state.readOnly = true; } catch(e){} }
+    let pending = 4;
+    const done = () => { if (--pending <= 0) setStatus('同期済み'); };
+    const sub = (name, key) => {
+      let first = true;
+      db.collection(name).onSnapshot(snap=>{
+        state[key] = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        if (first){ first=false; done(); }
+        render();
+      }, err=>{ setStatus('接続が切れました。再読み込みしてください'); });
+    };
+    sub('stocks','stocks'); sub('events','events'); sub('trades','trades'); sub('notes','notes');
+  })();
+})();
+</script>
