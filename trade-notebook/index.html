@@ -185,6 +185,14 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .pill.sig-stop{background:var(--down-soft);color:var(--down)}
 .pill.sig-target{background:var(--up-soft);color:var(--up)}
 .grp{font-size:11px;color:var(--muted)}
+.pill.sig-hit,.sig-hit{background:var(--warn-soft);color:var(--warn)}
+.tgt{display:flex;flex-direction:column;gap:2px;align-items:flex-end}
+.tgt input{width:96px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-family:var(--mono);font-size:13px;text-align:right}
+.tgt small{font-size:11px;color:var(--faint);white-space:nowrap}
+.tgt small.near{color:var(--warn);font-weight:700}
+.hero-tgt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;background:var(--warn-soft);border-radius:8px;font-size:13px}
+.hero-tgt input{width:110px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-family:var(--mono)}
+.hero-tgt b{color:var(--warn)}
 .ladder-empty{border:1px dashed var(--line);border-radius:8px;padding:16px;color:var(--muted);font-size:13px}
 @media (max-width:640px){ .wl .th,.wl .hide-sm{display:none} }
 
@@ -275,9 +283,42 @@ textarea{width:100%;min-height:70px;resize:vertical}
     if (state.db && !state.readOnly) t.append(el('button',{class:'tab add',type:'button',onclick:()=>{ $('#addStock').hidden=false; $('#nCode').focus(); }},'＋ 銘柄'));
   }
 
+  // 狙い値: 設定時の株価より下なら「下がったら」、上なら「上抜けたら」通知
+  function targetInfo(s){
+    const t = s.targetBuy, p = s.price;
+    if (t == null || !(t > 0)) return null;
+    const dir = s.targetDir || (p != null && t > p ? 'above' : 'below');
+    const hit = p != null && (dir === 'below' ? p <= t : p >= t);
+    const gap = p ? (t - p) / p : null;
+    return {t, dir, hit, gap, label: dir === 'below' ? `${money(s,t)}以下` : `${money(s,t)}以上`};
+  }
+  function targetField(s, id){
+    const inp = el('input',{id, type:'number', step: isUSD(s)?'0.01':'1', min:'0', inputmode:'decimal',
+      value: s.targetBuy ?? '', placeholder:'狙い値', 'aria-label':`${s.name}の狙い値`,
+      disabled: state.readOnly || !state.db,
+      onclick: e => e.stopPropagation(),
+      onkeydown: e => { e.stopPropagation(); if (e.key === 'Enter') e.target.blur(); },
+      onchange: e => saveTarget(s, e.target.value)});
+    return inp;
+  }
+  async function saveTarget(s, raw){
+    const v = parseFloat(raw);
+    if (!(v > 0)) { await saveStock(s.id, {targetBuy:null, targetDir:null, targetHitFor:null}); return; }
+    const dir = s.price != null && v > s.price ? 'above' : 'below';
+    await saveStock(s.id, {targetBuy:v, targetDir:dir, targetHitFor:null, targetSetAt:jstToday()});
+  }
+  function gapText(ti){
+    if (!ti) return '';
+    if (ti.hit) return '到達';
+    if (ti.gap == null) return ti.dir==='below' ? '下がったら通知' : '上抜けたら通知';
+    return `あと${ti.gap>0?'+':''}${(ti.gap*100).toFixed(1)}%`;
+  }
+
   function signalFor(s){
     const p = s.price;
     if (p == null) return {cls:'sig-wait', short:'株価未入力', text:'株価が未入力です'};
+    const ti = targetInfo(s);
+    if (ti && ti.hit) return {cls:'sig-hit', short:'狙い値到達', text:`狙い値（${ti.label}）に到達しています。条件を確認して判断`};
     if (s.stop != null && p < s.stop) return {cls:'sig-stop', short:'損切り割れ', text:`損切りライン ${money(s,s.stop)}を下回っています。撤退を検討する水準です`};
     const t = (s.targets||[]).filter(x=>p>=x.price).sort((a,b)=>b.price-a.price)[0];
     if (t) return {cls:'sig-target', short:'利確到達', text:`${t.label}（${money(s,t.price)}）に到達。利確を検討`};
@@ -302,12 +343,15 @@ textarea{width:100%;min-height:70px;resize:vertical}
       });
     const table = el('table',{class:'wl'},
       el('thead',{},el('tr',{},
-        el('th',{},'銘柄'),el('th',{class:'r'},'株価'),el('th',{class:'hide-sm'},'日付'),el('th',{},'状態'),el('th',{class:'hide-sm'},'次のイベント'),el('th',{class:'th'},'材料・テーマ'))),
+        el('th',{},'銘柄'),el('th',{class:'r'},'株価'),el('th',{class:'r'},'狙い値'),el('th',{class:'hide-sm'},'日付'),el('th',{},'状態'),el('th',{class:'hide-sm'},'次のイベント'),el('th',{class:'th'},'材料・テーマ'))),
       el('tbody',{}, rows.map(s=>{
         const sig = signalFor(s), ev = nextEvent(s);
         return el('tr',{tabindex:'0',onclick:()=>go(s.id),onkeydown:e=>{ if (e.key==='Enter') go(s.id); }},
           el('td',{},el('div',{class:'nm'},s.name),el('div',{class:'cd'},`${s.code}・${s.market||''}`),el('div',{class:'grp'},groupsOf(s).join(' / '))),
           el('td',{class:'r num'},money(s,s.price)),
+          el('td',{class:'r',onclick:e=>e.stopPropagation()}, (()=>{ const ti = targetInfo(s);
+            return el('div',{class:'tgt'}, targetField(s,'tb-'+s.id),
+              el('small',{class: ti && (ti.hit || Math.abs(ti.gap||1) < 0.03) ? 'near' : ''}, ti ? `${ti.dir==='below'?'↓':'↑'} ${gapText(ti)}` : '')); })()),
           el('td',{class:'num hide-sm',style:'font-size:12px;color:var(--faint)'},s.priceDate||''),
           el('td',{},el('span',{class:'pill '+sig.cls},sig.short)),
           el('td',{class:'hide-sm',style:'font-size:12px'}, ev ? `${fmtMD(ev.date)} ${ev.title}` : '—'),
@@ -347,6 +391,11 @@ textarea{width:100%;min-height:70px;resize:vertical}
         el('div',{class:'price-row'},
           el('div',{class:'price'}, p == null ? '—' : isUSD(s) ? '$'+Number(p).toLocaleString('en-US',{maximumFractionDigits:2}) : yen1(p), el('small',{},unit(s))),
           el('div',{class:'pdate'}, s.priceDate ? `${s.priceDate} 時点` : '')),
+        (()=>{ const ti = targetInfo(s);
+          return el('div',{class:'hero-tgt'},
+            el('label',{for:'tbHero'},'狙い値'), targetField(s,'tbHero'), el('span',{},unit(s).trim()),
+            ti ? el('span',{}, ti.hit ? el('b',{},'到達しました') : `${ti.dir==='below'?'下がって':'上抜けて'}${ti.label}になったら通知（${gapText(ti)}）`)
+               : el('span',{style:'color:var(--muted)'},'入れると、その値段に来たとき通知します')); })(),
         pform),
       el('div',{class:'stats'},
         el('div',{class:'stat'},el('span',{class:'label'},'PBR'),el('span',{class:'v'},pbr?pbr.toFixed(2)+'倍':'—'),el('span',{class:'s'},f.bps?`BPS ${yen(f.bps)}円で計算`:'BPS未設定')),
