@@ -169,6 +169,25 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .foot{font-size:12px;color:var(--faint)}
 .addbox{display:flex;flex-direction:column;gap:10px}
 
+/* watchlist */
+.pick{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:13px;max-width:240px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters .tab{font-size:12px;padding:3px 10px}
+.wl td{vertical-align:top}
+.wl tbody tr{cursor:pointer}
+.wl tbody tr:hover td{background:var(--sunk)}
+.wl .nm{font-weight:700}
+.wl .cd{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.wl .th{color:var(--muted);font-size:12px;max-width:38ch}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.pill.sig-wait{background:var(--sunk);color:var(--muted)}
+.pill.sig-zone{background:var(--accent-soft);color:var(--accent)}
+.pill.sig-stop{background:var(--down-soft);color:var(--down)}
+.pill.sig-target{background:var(--up-soft);color:var(--up)}
+.grp{font-size:11px;color:var(--muted)}
+.ladder-empty{border:1px dashed var(--line);border-radius:8px;padding:16px;color:var(--muted);font-size:13px}
+@media (max-width:640px){ .wl .th,.wl .hide-sm{display:none} }
+
 @media (max-width:860px){
   .hero,.grid,.pros-cons{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -231,31 +250,74 @@ textarea{width:100%;min-height:70px;resize:vertical}
   const fmtMD = iso => { const [y,m,d] = iso.slice(0,10).split('-'); return `${+m}/${+d}`; };
   const wd = iso => '日月火水木金土'[new Date(iso.slice(0,10)+'T00:00:00Z').getUTCDay()];
 
-  const state = { db:null, stocks:[], events:[], trades:[], notes:[], sel: store.get('sel') || null, readOnly:false };
+  const state = { db:null, stocks:[], events:[], trades:[], notes:[], sel: store.get('sel') || 'list', group: store.get('group') || 'すべて', readOnly:false };
   const setStatus = t => { $('#status').textContent = t; };
+  const isUSD = s => s && s.currency === 'USD';
+  const money = (s, v) => (v == null || isNaN(v)) ? '—' : isUSD(s) ? '$'+Number(v).toLocaleString('en-US',{maximumFractionDigits:2}) : yen1(v)+'円';
+  const unit = s => isUSD(s) ? ' ドル' : ' 円';
 
-  function stock(){ return state.stocks.find(s => s.id === state.sel) || state.stocks[0]; }
+  function stock(){ return state.sel === 'list' ? null : (state.stocks.find(s => s.id === state.sel) || null); }
+  function go(id){ state.sel = id; store.set('sel', id); render(); window.scrollTo(0,0); }
+  const groupsOf = s => s.groups && s.groups.length ? s.groups : ['未分類'];
 
   // ---------- render ----------
   function renderTabs(){
     const t = $('#tabs'); t.replaceChildren();
-    for (const s of state.stocks) {
-      t.append(el('button',{class:'tab',type:'button','aria-selected':String(stock() && s.id===stock().id),
-        onclick:()=>{ state.sel=s.id; store.set('sel',s.id); render(); }},
-        `${s.name} ${s.code}`));
+    t.append(el('button',{class:'tab',type:'button','aria-selected':String(state.sel==='list'),onclick:()=>go('list')},`一覧（${state.stocks.length}）`));
+    const sel = el('select',{class:'pick',id:'pick','aria-label':'銘柄を選ぶ',onchange:e=>{ if (e.target.value) go(e.target.value); }},
+      el('option',{value:''},'銘柄を選ぶ…'));
+    const byGroup = {};
+    for (const s of state.stocks) (byGroup[groupsOf(s)[0]] ||= []).push(s);
+    for (const [g, list] of Object.entries(byGroup)) {
+      sel.append(el('optgroup',{label:g}, list.map(s=>el('option',{value:s.id,selected:s.id===state.sel},`${s.name}（${s.code}）`))));
     }
+    t.append(sel);
     if (state.db && !state.readOnly) t.append(el('button',{class:'tab add',type:'button',onclick:()=>{ $('#addStock').hidden=false; $('#nCode').focus(); }},'＋ 銘柄'));
   }
 
   function signalFor(s){
     const p = s.price;
-    if (p == null) return {cls:'sig-wait', text:'株価が未入力です'};
-    if (s.stop != null && p < s.stop) return {cls:'sig-stop', text:`損切りライン ${yen(s.stop)}円を下回っています。撤退を検討する水準です`};
+    if (p == null) return {cls:'sig-wait', short:'株価未入力', text:'株価が未入力です'};
+    if (s.stop != null && p < s.stop) return {cls:'sig-stop', short:'損切り割れ', text:`損切りライン ${money(s,s.stop)}を下回っています。撤退を検討する水準です`};
     const t = (s.targets||[]).filter(x=>p>=x.price).sort((a,b)=>b.price-a.price)[0];
-    if (t) return {cls:'sig-target', text:`${t.label}（${yen(t.price)}円）に到達。利確を検討`};
+    if (t) return {cls:'sig-target', short:'利確到達', text:`${t.label}（${money(s,t.price)}）に到達。利確を検討`};
     const z = (s.zones||[]).find(z => p >= z.low && p <= z.high);
-    if (z) return {cls:'sig-zone', text:`${z.label}（${yen(z.low)}〜${yen(z.high)}円）の中にいます。条件を確認して判断`};
-    return {cls:'sig-wait', text:'どのゾーンにも入っていません。待機'};
+    if (z) return {cls:'sig-zone', short:z.label, text:`${z.label}（${money(s,z.low)}〜${money(s,z.high)}）の中にいます。条件を確認して判断`};
+    if (!(s.zones||[]).length && s.stop == null) return {cls:'sig-wait', short:'ゾーン未設定', text:'エントリーゾーンがまだありません。Claude に「この銘柄のチャート分析をしてシナリオ帳に入れて」と頼むと設定されます'};
+    return {cls:'sig-wait', short:'待機', text:'どのゾーンにも入っていません。待機'};
+  }
+
+  function nextEvent(s){
+    const today = jstToday();
+    return state.events.filter(e=>e.code===s.code && e.date.slice(0,10)>=today).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  }
+
+  function renderList(){
+    const groups = ['すべて', ...new Set(state.stocks.flatMap(groupsOf))];
+    if (!groups.includes(state.group)) state.group = 'すべて';
+    const rows = state.stocks.filter(s => state.group==='すべて' || groupsOf(s).includes(state.group))
+      .sort((a,b)=>{
+        const ga = groups.indexOf(groupsOf(a)[0]), gb = groups.indexOf(groupsOf(b)[0]);
+        return ga-gb || (a.order??99)-(b.order??99) || a.code.localeCompare(b.code);
+      });
+    const table = el('table',{class:'wl'},
+      el('thead',{},el('tr',{},
+        el('th',{},'銘柄'),el('th',{class:'r'},'株価'),el('th',{class:'hide-sm'},'日付'),el('th',{},'状態'),el('th',{class:'hide-sm'},'次のイベント'),el('th',{class:'th'},'材料・テーマ'))),
+      el('tbody',{}, rows.map(s=>{
+        const sig = signalFor(s), ev = nextEvent(s);
+        return el('tr',{tabindex:'0',onclick:()=>go(s.id),onkeydown:e=>{ if (e.key==='Enter') go(s.id); }},
+          el('td',{},el('div',{class:'nm'},s.name),el('div',{class:'cd'},`${s.code}・${s.market||''}`),el('div',{class:'grp'},groupsOf(s).join(' / '))),
+          el('td',{class:'r num'},money(s,s.price)),
+          el('td',{class:'num hide-sm',style:'font-size:12px;color:var(--faint)'},s.priceDate||''),
+          el('td',{},el('span',{class:'pill '+sig.cls},sig.short)),
+          el('td',{class:'hide-sm',style:'font-size:12px'}, ev ? `${fmtMD(ev.date)} ${ev.title}` : '—'),
+          el('td',{class:'th'},s.theme||''));
+      })));
+    return el('section',{class:'panel'},
+      el('div',{class:'panel-h'},el('h2',{},'ウォッチリスト'),el('span',{class:'label'},'行を押すと詳細')),
+      el('div',{class:'filters'}, groups.map(g=>el('button',{class:'tab',type:'button','aria-selected':String(g===state.group),onclick:()=>{ state.group=g; store.set('group',g); render(); }},g))),
+      el('div',{class:'tscroll'},table),
+      el('p',{class:'foot'},'株価は Web 検索で拾った目安です。毎週金曜の定期チェックで更新されます。'));
   }
 
   function renderHero(s){
@@ -279,11 +341,11 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
     return el('section',{class:'hero'},
       el('div',{class:'who'},
-        el('div',{class:'code'},`${s.code}・${s.market||'東証プライム'}`),
+        el('div',{class:'code'},`${s.code}・${s.market||'東証'}${s.groups?'・'+s.groups.join(' / '):''}`),
         el('h2',{},s.name),
         s.thesis ? el('p',{class:'thesis'},s.thesis) : null,
         el('div',{class:'price-row'},
-          el('div',{class:'price'}, yen1(p), el('small',{},' 円')),
+          el('div',{class:'price'}, p == null ? '—' : isUSD(s) ? '$'+Number(p).toLocaleString('en-US',{maximumFractionDigits:2}) : yen1(p), el('small',{},unit(s))),
           el('div',{class:'pdate'}, s.priceDate ? `${s.priceDate} 時点` : '')),
         pform),
       el('div',{class:'stats'},
@@ -297,7 +359,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   function renderLadder(s){
     const vals = [s.price, s.stop, ...(s.zones||[]).flatMap(z=>[z.low,z.high]), ...(s.targets||[]).map(t=>t.price), ...(s.refs||[]).map(r=>r.price)].filter(v=>v!=null);
-    if (!vals.length) return el('p',{class:'empty'},'ゾーンが未設定です');
+    if (!(s.zones||[]).length && s.stop == null) return el('div',{class:'ladder-empty'},`エントリーゾーン・損切り・利確目標はまだ設定されていません。チャットで Claude に「${s.name}のチャート分析をしてシナリオ帳に入れて」と頼むと、野村不動産と同じ形で埋まります。`);
     let lo = Math.min(...vals), hi = Math.max(...vals);
     const pad = (hi-lo)*0.06 || 20; lo -= pad; hi += pad;
     const step = [10,20,25,50,100,200,500,1000].find(st => (hi-lo)/st <= 9) || 1000;
@@ -455,8 +517,9 @@ textarea{width:100%;min-height:70px;resize:vertical}
       for (const [id,v] of Object.entries(keep)) { const n = document.getElementById(id); if (n && v !== '') n.value = v; }
       if (focusId) { const f = document.getElementById(focusId); if (f && f.focus) f.focus(); }
     });
+    if (!state.stocks.length) { m.append(el('p',{class:'empty'}, state.db ? '銘柄がまだありません。右上の「＋ 銘柄」から追加してください。' : 'この表示ではデータベースに接続できません。claude.ai 上で開いてください。')); return; }
     const s = stock();
-    if (!s) { m.append(el('p',{class:'empty'}, state.db ? '銘柄がまだありません。右上の「＋ 銘柄」から追加してください。' : 'この表示ではデータベースに接続できません。claude.ai 上で開いてください。')); return; }
+    if (!s) { m.append(renderList()); return; }
 
     m.append(el('div',{style:'display:flex;flex-direction:column;gap:20px'},
       renderHero(s),
