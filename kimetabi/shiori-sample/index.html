@@ -1,0 +1,443 @@
+<title>金沢のしおり</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yusei+Magic&family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Decol:wght@500;700&family=Zen+Old+Mincho:wght@600;900&display=swap">
+<style>
+:root{
+  /* 机（ページの外側） */
+  --desk:#E4E7EC; --desk-ink:#2B3340; --desk-muted:#5D6675; --desk-line:#C9CED7;
+  --chip:#FFFFFF; --chip-on:#26324A; --chip-on-ink:#FFFFFF;
+  --sans:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --desk:#171B22; --desk-ink:#E6E9EE; --desk-muted:#9AA3B1; --desk-line:#2E3440;
+    --chip:#232935; --chip-on:#E6E9EE; --chip-on-ink:#171B22;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --desk:#171B22; --desk-ink:#E6E9EE; --desk-muted:#9AA3B1; --desk-line:#2E3440;
+  --chip:#232935; --chip-on:#E6E9EE; --chip-on-ink:#171B22;
+}
+
+/* しおりのテーマ（紙なので画面のダーク設定には追従しない） */
+.book{
+  --paper:#FFFFFF; --ink:#1F2A44; --sub:#56617A; --rule:#CFDDEE; --grid:#E7EFF8;
+  --accent:#2B5FA8; --stamp:#D6323A; --tape:#F6D84C; --tape-ink:#3B3310;
+  --band:#2B5FA8; --band-ink:#FFFFFF;
+  --display:"Yusei Magic","Zen Maru Gothic",sans-serif;
+}
+.book[data-shiori="retro"]{
+  --paper:#F4ECDA; --ink:#3A2A1E; --sub:#7A6350; --rule:#D9C8A8; --grid:#EADFC6;
+  --accent:#2E7C76; --stamp:#B8452F; --tape:#E9B949; --tape-ink:#3A2A1E;
+  --band:#2E7C76; --band-ink:#F4ECDA;
+  --display:"Kaisei Decol","Zen Maru Gothic",serif;
+}
+.book[data-shiori="wa"]{
+  --paper:#F8F6F0; --ink:#1C2838; --sub:#5A6474; --rule:#D8D3C6; --grid:#EEEAE0;
+  --accent:#233B63; --stamp:#B3334A; --tape:#C9D7C2; --tape-ink:#1C2838;
+  --band:#233B63; --band-ink:#F8F6F0;
+  --display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--desk); color:var(--desk-ink); font-family:var(--sans);
+  padding-inline:16px; padding-block:0 56px; line-height:1.7;
+}
+
+/* ツールバー */
+.bar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:5;
+  background:color-mix(in srgb, var(--desk) 88%, transparent);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--desk-line);
+  margin-inline:-16px; padding:10px 16px;
+}
+.bar-in{max-width:560px; margin:0 auto; display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; justify-content:space-between}
+.bar-title{font-size:13px; color:var(--desk-muted)}
+.bar-title b{color:var(--desk-ink); font-weight:700}
+.themes{display:flex; gap:6px; flex-wrap:wrap}
+.themes button{
+  font:inherit; font-size:13px; padding:5px 12px; border-radius:999px;
+  border:1px solid var(--desk-line); background:var(--chip); color:var(--desk-ink); cursor:pointer;
+}
+.themes button[aria-pressed="true"]{background:var(--chip-on); color:var(--chip-on-ink); border-color:var(--chip-on)}
+.themes button:focus-visible{outline:2px solid var(--desk-ink); outline-offset:2px}
+.note{max-width:560px; margin:16px auto 0; font-size:12.5px; color:var(--desk-muted)}
+
+/* 紙 */
+.book{display:grid; gap:28px; max-width:560px; margin:20px auto 0}
+.page{
+  position:relative; background:var(--paper); color:var(--ink);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:14px 14px; background-position:-1px -1px;
+  padding:28px 26px 44px; border-radius:3px;
+  box-shadow:0 1px 0 rgba(0,0,0,.05), 0 10px 24px -12px rgba(20,30,50,.35);
+  min-height:520px;
+}
+.book[data-shiori="wa"] .page{background-image:none}
+.folio{position:absolute; left:0; right:0; bottom:14px; text-align:center; font-size:12px; color:var(--sub); letter-spacing:.2em}
+h2{
+  font-family:var(--display); font-weight:700; font-size:22px; margin:0 0 16px;
+  display:inline-block; background:var(--band); color:var(--band-ink);
+  padding:2px 14px 2px 12px; border-radius:2px; text-wrap:balance;
+}
+h3{font-family:var(--display); font-size:17px; margin:22px 0 8px; color:var(--accent); display:flex; align-items:center; gap:8px}
+h3::before{content:""; width:10px; height:10px; border:2px solid var(--accent); border-radius:50%}
+p{margin:0}
+.tabnum{font-variant-numeric:tabular-nums}
+
+/* 表紙 */
+.cover{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px; padding-top:48px; padding-bottom:60px}
+.cover .kicker{font-size:13px; letter-spacing:.35em; color:var(--sub)}
+.cover h1{
+  font-family:var(--display); font-weight:700; font-size:clamp(34px, 9vw, 48px); line-height:1.25; margin:0; text-wrap:balance;
+}
+.cover .tagline{
+  font-size:15px; background:var(--tape); color:var(--tape-ink);
+  padding:4px 16px; transform:rotate(-1.5deg); display:inline-block;
+}
+.cover .meta{display:grid; gap:4px; font-size:14.5px; margin-top:8px}
+.cover .meta b{font-size:18px}
+.stamp{
+  position:absolute; right:22px; top:22px; width:64px; height:64px; border-radius:50%;
+  border:2.5px solid var(--stamp); color:var(--stamp); display:grid; place-items:center;
+  font-family:var(--display); font-size:13px; line-height:1.2; transform:rotate(12deg); opacity:.85; text-align:center;
+}
+.illust{width:100%; max-width:300px; height:auto}
+.updated{font-size:11.5px; color:var(--sub)}
+
+/* めあて */
+.goal{border:2px dashed var(--accent); padding:14px 16px; border-radius:6px; font-size:16px; font-weight:500; background:var(--paper)}
+.members{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:4px}
+.member{display:flex; gap:10px; align-items:center; background:var(--paper); border:1.5px solid var(--rule); border-radius:8px; padding:8px 12px}
+.avatar{width:38px; height:38px; border-radius:50%; background:var(--tape); color:var(--tape-ink); display:grid; place-items:center; font-family:var(--display); font-size:18px; flex:none}
+.member small{display:block; color:var(--sub); font-size:12px; line-height:1.4}
+.rules{margin:0; padding:0; list-style:none; counter-reset:r; display:grid; gap:6px}
+.rules li{counter-increment:r; display:flex; gap:10px; background:var(--paper); padding:2px 0}
+.rules li::before{content:"その" counter(r); font-family:var(--display); color:var(--stamp); flex:none; width:3.2em}
+
+/* 日程表 */
+.dayhead{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; margin-bottom:6px}
+.dayhead .date{font-size:14px; color:var(--sub)}
+.sched{list-style:none; margin:0; padding:0; border-top:2px solid var(--ink)}
+.sched li{
+  display:grid; grid-template-columns:52px 1fr auto; gap:4px 12px; align-items:start;
+  padding:10px 0; border-bottom:1px solid var(--rule); background:var(--paper);
+}
+.sched time{font-weight:700; font-size:15px; font-variant-numeric:tabular-nums; padding-top:1px}
+.sched .what b{display:block; font-size:15px; font-weight:700; line-height:1.5}
+.sched .what span{display:block; font-size:12.5px; color:var(--sub); line-height:1.55; margin-top:2px}
+.sched .what em{font-style:normal; background:linear-gradient(transparent 55%, var(--tape) 55%); color:var(--ink)}
+.sched li.move{background:transparent}
+.sched li.move .what b{color:var(--accent)}
+.sched li.move .what b::before{content:"→ "; font-weight:700}
+.sched li.gather time{color:var(--stamp)}
+.sched li.gather .what b{color:var(--stamp)}
+.qr{width:58px; height:58px; display:grid; place-items:center; background:#fff; padding:3px; border:1px solid var(--rule)}
+.qr canvas, .qr img{width:52px!important; height:52px!important; display:block}
+.qr.fallback{font-size:10px; color:var(--sub); text-align:center; line-height:1.3}
+.qr-cap{font-size:11px; color:var(--sub); margin-top:10px}
+
+/* 食べる */
+.eat{display:grid; gap:10px}
+.eat-row{display:grid; grid-template-columns:auto 1fr; gap:2px 12px; background:var(--paper); border:1.5px solid var(--rule); border-radius:8px; padding:10px 12px}
+.eat-row .when{grid-row:span 2; font-family:var(--display); color:var(--accent); font-size:14px; writing-mode:vertical-rl; letter-spacing:.1em; padding:2px 0}
+.eat-row b{font-size:15px}
+.eat-row span{font-size:13px; color:var(--sub)}
+.eat-row .order{color:var(--ink)}
+.eat-row .order::before{content:"これを頼む："; color:var(--stamp); font-weight:700}
+.tag{display:inline-block; font-size:11px; border:1px solid currentColor; border-radius:3px; padding:0 5px; margin-left:6px; vertical-align:2px; color:var(--stamp); font-weight:500}
+.tag.ok{color:var(--accent)}
+
+.inn{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:14px; background:var(--paper); border-top:2px solid var(--ink); border-bottom:2px solid var(--ink); padding:10px 2px}
+.inn dt{color:var(--sub); font-size:12.5px; padding-top:2px}
+.inn dd{margin:0; font-variant-numeric:tabular-nums}
+
+/* 持ち物 */
+.check{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:4px 16px}
+.check label{display:flex; gap:8px; align-items:center; cursor:pointer; padding:3px 0; background:var(--paper)}
+.check input{appearance:none; -webkit-appearance:none; width:18px; height:18px; border:2px solid var(--ink); border-radius:3px; margin:0; display:grid; place-items:center; flex:none; background:var(--paper); cursor:pointer}
+.check input:checked::after{content:"✓"; color:var(--stamp); font-weight:700; font-size:17px; line-height:1; transform:translate(1px,-2px)}
+.check input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.check input:checked + span{color:var(--sub); text-decoration:line-through; text-decoration-color:var(--stamp)}
+.check .wx{font-size:11px; color:var(--accent); margin-left:2px}
+
+/* お金 */
+.money{width:100%; border-collapse:collapse; font-size:14px; background:var(--paper)}
+.money td{padding:6px 2px; border-bottom:1px dotted var(--rule)}
+.money td:last-child{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.money tr.total td{border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-size:16px; padding-top:8px}
+.money small{color:var(--sub)}
+.split{margin-top:10px; font-size:13px; color:var(--sub); background:var(--paper)}
+
+/* 連絡先 */
+.tel{display:grid; gap:6px; font-size:14px}
+.tel div{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; border-bottom:1px dotted var(--rule); padding:4px 0; background:var(--paper)}
+.tel b{font-weight:500}
+.tel span{font-variant-numeric:tabular-nums; user-select:all}
+
+/* 思い出 */
+.memo-lines{height:168px; background:repeating-linear-gradient(var(--paper) 0 27px, var(--rule) 27px 28px); border-radius:2px}
+.stamps{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:6px}
+.stamps div{aspect-ratio:1; max-width:100%; border:2px dashed var(--rule); border-radius:50%; display:grid; place-items:center; font-size:11px; color:var(--sub); text-align:center; line-height:1.3; background:var(--paper)}
+.sample-mark{position:absolute; left:20px; top:18px; font-size:11px; color:var(--sub); border:1px solid var(--rule); padding:0 6px; border-radius:3px; background:var(--paper)}
+
+@media (max-width:420px){
+  .page{padding:24px 18px 44px}
+  .sched li{grid-template-columns:46px 1fr auto; gap:4px 10px}
+  .qr{width:50px; height:50px}
+  .qr canvas, .qr img{width:44px!important; height:44px!important}
+}
+@media (prefers-reduced-motion:no-preference){
+  .page{transition:background-color .25s ease, color .25s ease}
+}
+@media print{
+  @page{size:A5; margin:0}
+  body{background:#fff; padding:0}
+  .bar, .note{display:none}
+  .book{max-width:none; margin:0; gap:0}
+  .page{box-shadow:none; border-radius:0; min-height:210mm; break-after:page}
+}
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="bar-title"><b>旅のしおり</b>　見本</div>
+    <div class="themes" role="group" aria-label="デザインテーマ">
+      <button type="button" id="th-school" data-t="school" aria-pressed="true">修学旅行風</button>
+      <button type="button" id="th-retro" data-t="retro" aria-pressed="false">レトロ</button>
+      <button type="button" id="th-wa" data-t="wa" aria-pressed="false">和風</button>
+    </div>
+  </div>
+</div>
+<p class="note">キメタビで確定したプランから自動生成される「旅のしおり」の見本です。各ページはA5サイズ1枚に相当します。店名・宿名・列車の時刻は見本用の架空のものです。</p>
+
+<main class="book" id="book" data-shiori="school">
+
+  <!-- 1 表紙 -->
+  <section class="page cover" aria-label="表紙">
+    <span class="sample-mark">見本</span>
+    <div class="stamp">決定<br>済み</div>
+    <div class="kicker">旅 の し お り</div>
+    <h1>金沢<br>食べつくし<br>一泊二日</h1>
+    <div class="tagline">朝市と湯涌温泉で、北陸の秋を食べつくす</div>
+    <svg class="illust" viewBox="0 0 300 120" aria-hidden="true">
+      <!-- 山並み -->
+      <path d="M0 96 L46 58 L78 80 L122 34 L168 76 L206 50 L250 84 L300 62 L300 120 L0 120 Z" fill="var(--grid)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M112 44 L122 34 L132 44" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+      <!-- 新幹線 -->
+      <g transform="translate(20 88)">
+        <path d="M0 10 H150 Q176 10 186 20 H0 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
+        <rect x="0" y="16" width="186" height="4" fill="var(--accent)"/>
+        <rect x="14" y="12" width="12" height="4" rx="1" fill="var(--ink)"/>
+        <rect x="34" y="12" width="12" height="4" rx="1" fill="var(--ink)"/>
+        <rect x="54" y="12" width="12" height="4" rx="1" fill="var(--ink)"/>
+        <rect x="74" y="12" width="12" height="4" rx="1" fill="var(--ink)"/>
+        <rect x="94" y="12" width="12" height="4" rx="1" fill="var(--ink)"/>
+        <rect x="114" y="12" width="12" height="4" rx="1" fill="var(--ink)"/>
+        <path d="M150 12 Q166 12 172 16 H150 Z" fill="var(--ink)"/>
+      </g>
+      <line x1="0" y1="110" x2="300" y2="110" stroke="var(--ink)" stroke-width="2"/>
+      <!-- 湯けむり -->
+      <path d="M250 40 q-6 -8 0 -16 q6 -8 0 -16" fill="none" stroke="var(--stamp)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M262 40 q-6 -8 0 -16 q6 -8 0 -16" fill="none" stroke="var(--stamp)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div class="meta">
+      <b class="tabnum">2026年10月10日（土）〜11日（日）</b>
+      <span>行き先　石川県 金沢市</span>
+      <span>メンバー　ナオ・ハル（大人2名）</span>
+    </div>
+    <p class="updated tabnum">最終更新　2026年9月26日 14:20（プランと自動で同期）</p>
+    <div class="folio">— 1 —</div>
+  </section>
+
+  <!-- 2 めあて -->
+  <section class="page" aria-label="旅のめあて">
+    <h2>旅のめあて</h2>
+    <p class="goal">近江町市場の海鮮丼と、宿ののどぐろ。<br>「食べたいもの」を一つも取りこぼさない。</p>
+
+    <h3>メンバーと係</h3>
+    <div class="members">
+      <div class="member"><div class="avatar">ナ</div><div>ナオ<small>しおり係・会計係</small></div></div>
+      <div class="member"><div class="avatar">ハ</div><div>ハル<small>写真係・道案内係</small></div></div>
+    </div>
+
+    <h3>旅のルール</h3>
+    <ol class="rules">
+      <li>集合時刻の5分前には集合場所にいる。</li>
+      <li>市場では「迷ったら両方買う」。</li>
+      <li>写真は食べる前に1枚だけ。冷めないうちに食べる。</li>
+      <li>予定を変えたくなったらアプリで差し替える。現地で調べ直さない。</li>
+    </ol>
+
+    <h3>この旅の決め手</h3>
+    <ol class="rules">
+      <li>東京から乗り換えなしの新幹線1本、約2時間半。</li>
+      <li>湯涌温泉は金沢駅から送迎バスあり。夕食ののどぐろが評判の宿。</li>
+      <li>市場は11時前に着く時間割で、行列を避ける。</li>
+    </ol>
+    <div class="folio">— 2 —</div>
+  </section>
+
+  <!-- 3 一日目 -->
+  <section class="page" aria-label="日程表 一日目">
+    <div class="dayhead"><h2>一日目</h2><span class="date tabnum">10月10日（土）　晴れ 23℃ / 15℃</span></div>
+    <ol class="sched">
+      <li class="gather"><time>07:20</time><div class="what"><b>東京駅 集合</b><span>北陸新幹線 中央乗換口の前。駅弁は集合前に買っておく</span></div><div class="qr" data-q="東京駅 北陸新幹線 中央乗換口"></div></li>
+      <li class="move"><time>07:36</time><div class="what"><b>北陸新幹線 かがやき（見本）</b><span>7号車 12D・12E　<em>E席は立山連峰側</em></span></div><div></div></li>
+      <li><time>10:05</time><div class="what"><b>金沢駅 着</b><span>鼓門の前で最初の1枚。荷物は駅のコインロッカーへ</span></div><div class="qr" data-q="金沢駅 鼓門"></div></li>
+      <li><time>10:30</time><div class="what"><b>近江町市場「いちば亭」海鮮丼</b><span><em>11時を過ぎると行列</em>。先に並ぶ</span></div><div class="qr" data-q="近江町市場"></div></li>
+      <li><time>12:00</time><div class="what"><b>兼六園</b><span>所要60分。桂坂口から入り、霞ヶ池をぐるっと一周</span></div><div class="qr" data-q="兼六園 桂坂口"></div></li>
+      <li><time>13:15</time><div class="what"><b>金沢21世紀美術館</b><span>所要90分。「スイミング・プール」の下に入るなら先に展覧会チケットを買う</span></div><div class="qr" data-q="金沢21世紀美術館"></div></li>
+      <li><time>15:00</time><div class="what"><b>ひがし茶屋街</b><span>金箔ソフトを食べて、町家カフェで休憩</span></div><div class="qr" data-q="ひがし茶屋街"></div></li>
+      <li class="gather"><time>16:30</time><div class="what"><b>金沢駅西口 送迎バス乗り場</b><span>ロッカーの荷物を忘れずに。バスは16:40発</span></div><div class="qr" data-q="金沢駅 西口"></div></li>
+      <li><time>17:15</time><div class="what"><b>宿 着・チェックイン</b><span>夕食前にひとっ風呂</span></div><div></div></li>
+      <li><time>18:30</time><div class="what"><b>夕食（部屋食）</b><span>のどぐろと治部煮の秋の会席</span></div><div></div></li>
+    </ol>
+    <p class="qr-cap">QRコードをスマホで読むと、その場所の地図が開きます。</p>
+    <div class="folio">— 3 —</div>
+  </section>
+
+  <!-- 4 二日目 -->
+  <section class="page" aria-label="日程表 二日目">
+    <div class="dayhead"><h2>二日目</h2><span class="date tabnum">10月11日（日）　くもり 22℃ / 14℃</span></div>
+    <ol class="sched">
+      <li><time>07:30</time><div class="what"><b>朝食</b><span>宿の食事処。のどぐろの干物</span></div><div></div></li>
+      <li class="gather"><time>09:30</time><div class="what"><b>チェックアウト・送迎バス</b><span>9:40発、金沢駅西口まで約30分</span></div><div></div></li>
+      <li><time>10:30</time><div class="what"><b>長町武家屋敷跡</b><span>所要60分。土塀の路地を歩く</span></div><div class="qr" data-q="長町武家屋敷跡"></div></li>
+      <li><time>12:00</time><div class="what"><b>昼食「金沢おでん こはる」</b><span>車麩と赤巻。<em>11:30開店、日曜も営業</em></span></div><div class="qr" data-q="金沢おでん 香林坊"></div></li>
+      <li><time>13:30</time><div class="what"><b>金沢駅 あんと でおみやげ</b><span>買うものは「持ち物」ページの下に書いておく</span></div><div class="qr" data-q="金沢百番街 あんと"></div></li>
+      <li class="gather"><time>15:00</time><div class="what"><b>新幹線改札 集合</b><span>駅弁と飲み物を買ってから</span></div><div></div></li>
+      <li class="move"><time>15:14</time><div class="what"><b>北陸新幹線 かがやき（見本）</b><span>5号車 8A・8B</span></div><div></div></li>
+      <li><time>17:48</time><div class="what"><b>東京駅 着・解散</b><span>おつかれさまでした</span></div><div></div></li>
+    </ol>
+    <div class="folio">— 4 —</div>
+  </section>
+
+  <!-- 5 食べる・泊まる -->
+  <section class="page" aria-label="食べるものと宿">
+    <h2>食べるもの</h2>
+    <div class="eat">
+      <div class="eat-row"><div class="when">1日目 朝昼</div><b>近江町市場「いちば亭」<span class="tag ok">予約不要</span></b><span class="order">のどぐろ入り海鮮丼</span></div>
+      <div class="eat-row"><div class="when">1日目 おやつ</div><b>ひがし茶屋街 金箔ソフト</b><span class="order">金箔1枚まるごと乗せ</span></div>
+      <div class="eat-row"><div class="when">1日目 夜</div><b>宿の会席<span class="tag">予約済</span></b><span class="order">のどぐろの塩焼き（蟹は11月6日の解禁後）</span></div>
+      <div class="eat-row"><div class="when">2日目 昼</div><b>金沢おでん「こはる」<span class="tag ok">予約不要</span></b><span class="order">車麩・赤巻・ばい貝</span></div>
+    </div>
+
+    <h2 style="margin-top:28px">泊まるところ</h2>
+    <dl class="inn">
+      <dt>宿</dt><dd><b>湯涌温泉 あかり荘（見本）</b>　和室10畳</dd>
+      <dt>住所</dt><dd>石川県金沢市湯涌町（見本）</dd>
+      <dt>電話</dt><dd>076-000-0000（見本）</dd>
+      <dt>チェックイン</dt><dd>15:00〜　（到着予定 17:15）</dd>
+      <dt>チェックアウト</dt><dd>10:00まで</dd>
+      <dt>食事</dt><dd>夕食 18:30 部屋食 ／ 朝食 7:30 食事処</dd>
+      <dt>送迎</dt><dd>金沢駅西口 16:40発 ／ 宿 9:40発</dd>
+    </dl>
+    <div class="folio">— 5 —</div>
+  </section>
+
+  <!-- 6 持ち物・お金 -->
+  <section class="page" aria-label="持ち物とお金">
+    <h2>持ち物チェック</h2>
+    <ul class="check" id="check">
+      <li><label><input type="checkbox" id="c1"><span>スマホ・充電器</span></label></li>
+      <li><label><input type="checkbox" id="c2"><span>新幹線のきっぷ（アプリ）</span></label></li>
+      <li><label><input type="checkbox" id="c3"><span>財布・交通系IC</span></label></li>
+      <li><label><input type="checkbox" id="c4"><span>このしおり</span></label></li>
+      <li><label><input type="checkbox" id="c5"><span>羽織れる上着 <span class="wx">朝晩14℃</span></span></label></li>
+      <li><label><input type="checkbox" id="c6"><span>折りたたみ傘 <span class="wx">2日目くもり</span></span></label></li>
+      <li><label><input type="checkbox" id="c7"><span>歩きやすい靴 <span class="wx">1日目 約1.2万歩</span></span></label></li>
+      <li><label><input type="checkbox" id="c8"><span>着替え1日分</span></label></li>
+      <li><label><input type="checkbox" id="c9"><span>エコバッグ（おみやげ用）</span></label></li>
+      <li><label><input type="checkbox" id="c10"><span>保冷バッグ（市場の干物用）</span></label></li>
+    </ul>
+
+    <h2 style="margin-top:28px">お金のページ</h2>
+    <table class="money">
+      <tbody>
+        <tr><td>新幹線 往復 <small>2名</small></td><td>¥56,000</td></tr>
+        <tr><td>宿 1泊2食 <small>2名</small></td><td>¥44,000</td></tr>
+        <tr><td>食事 <small>市場・おでん・おやつ</small></td><td>¥9,000</td></tr>
+        <tr><td>入場料 <small>美術館・兼六園</small></td><td>¥2,640</td></tr>
+        <tr><td>予備費 <small>おみやげ・ロッカー</small></td><td>¥8,000</td></tr>
+        <tr class="total"><td>合計</td><td>¥119,640</td></tr>
+      </tbody>
+    </table>
+    <p class="split tabnum">ひとりあたり ¥59,820（予算 ¥60,000 以内）</p>
+    <div class="folio">— 6 —</div>
+  </section>
+
+  <!-- 7 連絡先・思い出 -->
+  <section class="page" aria-label="連絡先と思い出">
+    <h2>困ったときは</h2>
+    <div class="tel">
+      <div><b>宿（湯涌温泉 あかり荘）</b><span>076-000-0000（見本）</span></div>
+      <div><b>JR 列車の運行情報</b><span>アプリの当日モードで確認</span></div>
+      <div><b>救急・消防</b><span>119</span></div>
+      <div><b>警察</b><span>110</span></div>
+          </div>
+
+    <h2 style="margin-top:28px">思い出のページ</h2>
+    <h3>いちばんおいしかったもの</h3>
+    <div class="memo-lines"></div>
+    <h3>スタンプ・写真</h3>
+    <div class="stamps">
+      <div>兼六園</div><div>近江町<br>市場</div><div>茶屋街</div><div>湯涌<br>温泉</div>
+    </div>
+    <div class="folio">— 7 —</div>
+  </section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  var book = document.getElementById('book');
+
+  // テーマ切り替え
+  function setTheme(t){
+    book.setAttribute('data-shiori', t);
+    document.querySelectorAll('.themes button').forEach(function(b){
+      b.setAttribute('aria-pressed', b.dataset.t === t ? 'true' : 'false');
+    });
+    try{ localStorage.setItem('shiori-theme', t); }catch(e){}
+  }
+  document.querySelectorAll('.themes button').forEach(function(b){
+    b.addEventListener('click', function(){ setTheme(b.dataset.t); });
+  });
+  try{ var saved = localStorage.getItem('shiori-theme'); if(saved) setTheme(saved); }catch(e){}
+
+  // 地図QR
+  document.querySelectorAll('.qr[data-q]').forEach(function(el){
+    var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(el.dataset.q);
+    if (window.QRCode){
+      try{
+        new QRCode(el, {text:url, width:104, height:104, colorDark:'#1F2A44', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M});
+        el.setAttribute('title', el.dataset.q + ' の地図');
+        return;
+      }catch(e){}
+    }
+    el.classList.add('fallback');
+    el.textContent = '地図QR';
+  });
+
+  // 持ち物チェック（この端末にだけ保存）
+  var boxes = document.querySelectorAll('#check input');
+  var state = {};
+  try{ state = JSON.parse(localStorage.getItem('shiori-check') || '{}'); }catch(e){}
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener('change', function(){
+      state[b.id] = b.checked;
+      try{ localStorage.setItem('shiori-check', JSON.stringify(state)); }catch(e){}
+    });
+  });
+})();
+</script>
