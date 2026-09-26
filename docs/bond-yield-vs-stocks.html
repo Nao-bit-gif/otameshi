@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>国債金利と株式の関係</title>
+<style>
+  @page { size: A4; margin: 16mm 16mm 16mm 16mm; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .box, .two, table, .flow, .summary { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  body { font-family: "IPAPGothic", "IPAGothic", sans-serif; color: #1f2933; font-size: 10.5pt; line-height: 1.75; margin: 0; }
+  h1 { font-size: 20pt; margin: 0 0 2mm; color: #0b3d5c; letter-spacing: .02em; }
+  .sub { color: #5b6b78; margin: 0 0 6mm; font-size: 10pt; }
+  h2 { font-size: 13.5pt; color: #0b3d5c; border-left: 5px solid #1c7ed6; padding-left: 3mm; margin: 7mm 0 3mm; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 2mm; color: #243b53; }
+  p { margin: 0 0 2.5mm; }
+  .box { border: 1px solid #c9d6e2; background: #f4f8fb; border-radius: 3mm; padding: 3.5mm 5mm; margin: 3mm 0; }
+  .two { display: flex; gap: 4mm; margin: 3mm 0; }
+  .two > div { flex: 1; border-radius: 3mm; padding: 3.5mm 4.5mm; }
+  .gov { background: #fff4e6; border: 1px solid #f5c68a; }
+  .inv { background: #e7f5ff; border: 1px solid #9ccbf0; }
+  .tag { font-weight: bold; font-size: 11pt; display: block; margin-bottom: 1mm; }
+  table { border-collapse: collapse; width: 100%; margin: 3mm 0; }
+  th, td { border: 1px solid #c9d6e2; padding: 2mm 3mm; text-align: left; vertical-align: top; }
+  th { background: #0b3d5c; color: #fff; font-weight: bold; }
+  td:first-child { background: #f4f8fb; font-weight: bold; width: 22%; }
+  .case { border-radius: 3mm; padding: 3.5mm 4.5mm; flex: 1; }
+  .low { background: #ebfbee; border: 1px solid #8ce99a; }
+  .high { background: #fff5f5; border: 1px solid #ffa8a8; }
+  .bar { height: 5mm; border-radius: 1mm; display: inline-block; vertical-align: middle; }
+  .row { margin: 1.2mm 0; font-size: 9.5pt; }
+  .row span.l { display: inline-block; width: 16mm; }
+  .b-bond { background: #1c7ed6; }
+  .b-stock { background: #f08c00; }
+  .flow { display: flex; align-items: center; justify-content: space-between; gap: 2mm; margin: 3mm 0; }
+  .flow div.step { flex: 1; text-align: center; background: #f4f8fb; border: 1px solid #c9d6e2; border-radius: 3mm; padding: 3mm 2mm; font-size: 9.5pt; }
+  .flow div.arrow { color: #1c7ed6; font-size: 14pt; }
+  .summary { background: #0b3d5c; color: #fff; border-radius: 3mm; padding: 4mm 6mm; margin-top: 5mm; }
+  .summary h2 { color: #fff; border-left-color: #74c0fc; margin-top: 0; }
+  .summary ol { margin: 0; padding-left: 6mm; }
+  strong { color: #c92a2a; }
+  .summary strong { color: #ffd43b; }
+  .note { font-size: 8.5pt; color: #7b8794; margin-top: 4mm; }
+</style>
+</head>
+<body>
+  <h1>国債金利と株式の関係</h1>
+  <p class="sub">「金利が上がると株が売られる」のはなぜか</p>
+
+  <div class="box">
+    <b>元の文：</b>国債金利だから国は払う方。国債金利が高くなると、リスクを許容して株式を保有する優位性が低くなる。<br>
+    → この2つの文は<b>別々のこと</b>を言っています。順番に見ていきます。
+  </div>
+
+  <h2>① 「国債金利だから国は払う方」</h2>
+  <p>国債は<b>国の借金</b>です。国がお金を借りて、貸した人（投資家）に利息を払います。</p>
+  <div class="two">
+    <div class="gov"><span class="tag">国（借りる側）</span>利息を<b>払う</b>。<br>金利が上がると<strong>支払いが増えて苦しい</strong>。</div>
+    <div class="inv"><span class="tag">投資家（貸す側）</span>利息を<b>受け取る</b>。<br>金利が上がると<strong>もらえる額が増えてうれしい</strong>。</div>
+  </div>
+  <p>例：金利1%の国債を100万円分買う → 国から毎年<b>1万円</b>の利息がもらえる。</p>
+  <p>同じ「金利上昇」でも、<b>どちらの立場で見るか</b>で意味が逆になります。</p>
+
+  <h2>② 「金利が高くなると、株を持つ優位性が低くなる」</h2>
+  <p>ここからは<b>投資家の立場</b>で考えます。投資家は、手元のお金を「国債」と「株」のどちらに入れるか比べています。</p>
+  <table>
+    <tr><th></th><th>国債</th><th>株</th></tr>
+    <tr><td>リターン</td><td>決まった利息がもらえる</td><td>上がるか下がるか分からない</td></tr>
+    <tr><td>リスク</td><td>ほぼない（国がつぶれない限り返ってくる）</td><td>大きい（値下がりすることもある）</td></tr>
+  </table>
+  <p>株は損をするかもしれないので、国債より<b>多く儲かりそうでないと</b>持つ意味がありません。この<b>「リスクを取る代わりに上乗せでもらえるリターン」</b>がポイントです。</p>
+
+  <h3>例で比べる（株の期待リターン＝年5%とする）</h3>
+  <div class="two">
+    <div class="case low">
+      <span class="tag">国債金利 0.5% のとき</span>
+      <div class="row"><span class="l">国債</span><span class="bar b-bond" style="width:5mm"></span> 0.5%</div>
+      <div class="row"><span class="l">株</span><span class="bar b-stock" style="width:50mm"></span> 5%</div>
+      上乗せは <b>4.5%</b>。<br>→「リスクを取って株を買おう」
+    </div>
+    <div class="case high">
+      <span class="tag">国債金利 4% のとき</span>
+      <div class="row"><span class="l">国債</span><span class="bar b-bond" style="width:40mm"></span> 4%</div>
+      <div class="row"><span class="l">株</span><span class="bar b-stock" style="width:50mm"></span> 5%</div>
+      上乗せは <b>1%</b>だけ。<br>→「割に合わない。国債でいいや」
+    </div>
+  </div>
+  <p>これが「リスクを許容して株を保有する<b>優位性（うまみ）が低くなる</b>」の意味です。</p>
+
+  <h2>③ その結果どうなるか</h2>
+  <div class="flow">
+    <div class="step">国債金利が<br>上がる</div><div class="arrow">▶</div>
+    <div class="step">安全な国債でも<br>十分に儲かる</div><div class="arrow">▶</div>
+    <div class="step">株を売って<br>国債に乗り換え</div><div class="arrow">▶</div>
+    <div class="step"><b>株価に<br>下落圧力</b></div>
+  </div>
+  <p>ニュースで「金利上昇で株安」と言われるのは、この仕組みです。</p>
+
+  <div class="summary">
+    <h2>まとめ</h2>
+    <ol>
+      <li>国債金利は、<strong>国が払い、投資家が受け取る</strong>もの</li>
+      <li>金利が上がると「安全な国債でも十分に儲かる」ようになる</li>
+      <li>すると、わざわざ危ない株を持つ理由が薄れて、<strong>株が売られやすくなる</strong></li>
+    </ol>
+  </div>
+  <p class="note">※数値は説明用の例です。実際の株価は金利以外にも企業業績や景気などさまざまな要因で動きます。</p>
+</body>
+</html>
