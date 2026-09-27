@@ -11,6 +11,8 @@
   --ok:#1E7A4C; --ok-soft:#DFF1E7;
   --up:#B4412F; --down:#1E7A4C;
   --shadow:0 1px 2px rgba(20,28,38,.06), 0 8px 24px -14px rgba(20,28,38,.28);
+  --walk-bg:#DDF0E4; --walk-fg:#1B6B41; --bus-bg:#FBE4D2; --bus-fg:#9A4A12;
+  --taxi-bg:#FCEFB8; --taxi-fg:#5E4700; --rail-bg:#1F3A68; --rail-fg:#FFFFFF;
   --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
   --display:"Yusei Magic","Zen Kaku Gothic New",sans-serif;
 }
@@ -24,6 +26,8 @@
     --ok:#5FCB92; --ok-soft:#173327;
     --up:#F08A76; --down:#5FCB92;
     --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 26px -14px rgba(0,0,0,.7);
+    --walk-bg:#173327; --walk-fg:#7FD9A6; --bus-bg:#3A2616; --bus-fg:#F4AE78;
+    --taxi-bg:#3A3212; --taxi-fg:#F5D55C; --rail-bg:#9DB8E8; --rail-fg:#0F141B;
   }
 }
 :root[data-theme="dark"]{
@@ -35,6 +39,8 @@
   --ok:#5FCB92; --ok-soft:#173327;
   --up:#F08A76; --down:#5FCB92;
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 26px -14px rgba(0,0,0,.7);
+  --walk-bg:#173327; --walk-fg:#7FD9A6; --bus-bg:#3A2616; --bus-fg:#F4AE78;
+  --taxi-bg:#3A3212; --taxi-fg:#F5D55C; --rail-bg:#9DB8E8; --rail-fg:#0F141B;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -103,6 +109,20 @@ button{font:inherit; color:inherit}
 .tl .note{color:var(--muted); font-size:12.5px; line-height:1.5}
 .tl .warn{color:var(--up)}
 .tl .body.changed{border-radius:8px}
+.tl li.leg{padding:2px 0 4px}
+.tl li.leg > .body{background:var(--sunk); border:1px dashed var(--line); border-radius:8px; padding:5px 10px; gap:2px}
+.tl li.leg > span{align-self:center; justify-self:end; font-size:11px; color:var(--faint)}
+.tl li.leg::after{display:none}
+.legline{display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12.5px; color:var(--muted); line-height:1.5}
+.legalt{font-size:11.5px; color:var(--faint); margin-top:1px}
+.legalt::before{content:"⇄ "}
+.mode{display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em; padding:1px 8px; border-radius:4px; background:var(--m-bg); color:var(--m-fg); white-space:nowrap}
+.m-walk{--m-bg:var(--walk-bg); --m-fg:var(--walk-fg)}
+.m-bus{--m-bg:var(--bus-bg); --m-fg:var(--bus-fg)}
+.m-taxi{--m-bg:var(--taxi-bg); --m-fg:var(--taxi-fg)}
+.m-rail{--m-bg:var(--rail-bg); --m-fg:var(--rail-fg)}
+.daymove{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; font-size:12.5px; color:var(--muted)}
+.daymove b{color:var(--ink)}
 
 /* 全体調整 */
 .adjust{display:flex; gap:8px; flex-wrap:wrap}
@@ -200,7 +220,7 @@ button{font:inherit; color:inherit}
         <button type="button" role="tab" id="tab2" aria-selected="false" data-day="1">2日目<small>10/11 日 くもり</small></button>
       </div>
 
-      <section class="card"><ol class="tl" id="timeline"></ol></section>
+      <section class="card"><ol class="tl" id="timeline"></ol><div class="daymove" id="daymove"></div></section>
 
       <div class="label">まとめて調整</div>
       <div class="adjust">
@@ -227,6 +247,7 @@ button{font:inherit; color:inherit}
       <li><code>P3</code><b>理由を1行で</b>宿と各予定に、黄色い「理由」を必ず付けています。</li>
       <li><code>P4</code><b>成立を保証</b>「成立チェック」を押すと確認済みの項目が開きます。調整後も全項目OKの案だけを出します。</li>
       <li><code>P5</code><b>予約まで一気に</b>「このプランで決める」で、売り切れやすい順の予約リストに進みます。</li>
+      <li><code>F-18</code><b>移動手段を明記</b>予定と予定のあいだに、徒歩・バス・タクシー・電車の別、所要時間、運賃を1行で入れています。雨の日版では歩く区間をタクシーに切り替えます。</li>
       <li><code>F-13</code><b>部分調整と元に戻す</b>差し替えたらトーストの「元に戻す」で1手戻せます。</li>
     </ol>
     <div class="links">
@@ -259,29 +280,38 @@ button{font:inherit; color:inherit}
 
   var DAYS = [
     [
-      {id:'d1a', t:'07:36', ttl:'東京 → 金沢　かがやき（見本）', note:'7号車 12D・12E　E席は立山連峰側', move:true},
-      {id:'d1b', t:'10:30', ttl:'近江町市場「いちば亭」海鮮丼', note:'のどぐろ入り海鮮丼', reason:'11時を過ぎると行列。この時間なら待たずに入れる', cost:5000, swap:[
+      {id:'d1a', t:'07:36', ttl:'東京 → 金沢　かがやき（見本）', note:'7号車 12D・12E　E席は立山連峰側　10:05 金沢着', move:true, ride:{m:'rail', label:'新幹線', min:'2時間29分'}},
+      {id:'d1b', t:'10:30', ttl:'近江町市場「いちば亭」海鮮丼', note:'のどぐろ入り海鮮丼', reason:'11時を過ぎると行列。この時間なら待たずに入れる', cost:5000,
+        legIn:{m:'bus', min:7, yen:420, txt:'金沢駅東口 → 武蔵ヶ辻・近江町市場', alt:'歩くなら15分。荷物は駅のロッカーへ'}, swap:[
         {ttl:'近江町市場で食べ歩き', note:'のどぐろ串・岩がき・コロッケ', reason:'並ばずに色々つまめる。量を調整しやすい', diffs:[['minus','−¥1,000'],['minus','待ち 0分']]},
-        {ttl:'金沢駅「回転寿司 まわる亭（見本）」', note:'駅ナカ、荷物を預けてすぐ', reason:'移動が最短。地物のネタが回っている', diffs:[['minus','−¥1,200'],['minus','移動 −15分'],['','市場の雰囲気はなし']]}
+        {ttl:'金沢駅「回転寿司 まわる亭（見本）」', note:'駅ナカ、荷物を預けてすぐ', reason:'移動が最短。地物のネタが回っている', legIn:{m:'walk', min:2, txt:'金沢駅の構内'}, diffs:[['minus','−¥1,200'],['minus','移動 −15分'],['','市場の雰囲気はなし']]}
       ]},
-      {id:'d1c', t:'12:00', ttl:'兼六園', note:'所要60分　桂坂口から霞ヶ池を一周', reason:'市場から歩いて15分。昼の光で池がいちばんきれい', cost:640},
-      {id:'d1d', t:'13:15', ttl:'金沢21世紀美術館', note:'所要90分', reason:'兼六園の隣。土曜も18時まで開いている', cost:2000, swap:[
-        {ttl:'鈴木大拙館', note:'所要45分　水鏡の庭', reason:'人が少なく静か。座って休める', diffs:[['minus','−¥1,400'],['minus','−45分']]},
-        {ttl:'町家カフェで休憩', note:'所要60分　加賀棒茶と和菓子', reason:'朝が早いので中休み。午後の歩きが楽になる', diffs:[['minus','−¥800'],['minus','歩数 −2,000']]}
+      {id:'d1c', t:'12:00', ttl:'兼六園', note:'所要60分　桂坂口から霞ヶ池を一周', reason:'市場から歩いて15分。昼の光で池がいちばんきれい', cost:640,
+        legIn:{m:'walk', min:15, txt:'百万石通りを南へ 約1.1km', alt:'バスなら8分・¥420'}},
+      {id:'d1d', t:'13:15', ttl:'金沢21世紀美術館', note:'所要90分', reason:'兼六園の隣。土曜も18時まで開いている', cost:2000,
+        legIn:{m:'walk', min:5, txt:'真弓坂口を出てすぐ'}, swap:[
+        {ttl:'鈴木大拙館', note:'所要45分　水鏡の庭', reason:'人が少なく静か。座って休める', legIn:{m:'walk', min:10, txt:'兼六園の小立野口から坂を下る'}, diffs:[['minus','−¥1,400'],['minus','−45分']]},
+        {ttl:'町家カフェで休憩', note:'所要60分　加賀棒茶と和菓子', reason:'朝が早いので中休み。午後の歩きが楽になる', legIn:{m:'walk', min:5, txt:'広坂の通り沿い'}, diffs:[['minus','−¥800'],['minus','歩数 −2,000']]}
       ]},
-      {id:'d1e', t:'15:00', ttl:'ひがし茶屋街', note:'金箔ソフトと町家カフェ', reason:'夕方前は観光客が減り、写真を撮りやすい', cost:2000},
-      {id:'d1f', t:'16:40', ttl:'金沢駅西口 → 宿　送迎バス', note:'コインロッカーの荷物を忘れずに', move:true},
+      {id:'d1e', t:'15:00', ttl:'ひがし茶屋街', note:'金箔ソフトと町家カフェ', reason:'夕方前は観光客が減り、写真を撮りやすい', cost:2000,
+        legIn:{m:'bus', min:15, yen:420, txt:'広坂 → 橋場町（城下まち金沢周遊バス）', alt:'タクシーなら10分・約¥1,300'}},
+      {id:'d1f', t:'16:40', ttl:'金沢駅西口 → 宿　送迎バス', note:'17:10 宿着　コインロッカーの荷物を忘れずに', move:true, ride:{m:'bus', label:'送迎バス', min:'30分', yen:'無料'},
+        legIn:{m:'bus', min:15, yen:420, txt:'橋場町 → 金沢駅東口　ロッカーの荷物を取る'}},
       {id:'d1g', t:'18:30', ttl:'夕食　のどぐろと治部煮の会席', note:'部屋食　蟹は11月6日の解禁後', reason:'宿の評判がいちばん高い食事。10月の旬はのどぐろ'}
     ],
     [
-      {id:'d2a', t:'09:40', ttl:'宿 → 金沢駅　送迎バス', note:'朝食 7:30　チェックアウト 10:00', move:true},
-      {id:'d2b', t:'10:30', ttl:'長町武家屋敷跡', note:'所要60分　土塀の路地を歩く', reason:'駅からバス10分。午前中は人が少ない', cost:0},
-      {id:'d2c', t:'12:00', ttl:'金沢おでん「こはる（見本）」', note:'車麩・赤巻・ばい貝', reason:'日曜も営業。11:30開店で12時なら待ち少なめ', cost:3000, swap:[
-        {ttl:'金沢カレー「ゴールド亭（見本）」', note:'カツカレー', reason:'早くて安い。金沢のご当地グルメ', diffs:[['minus','−¥800'],['minus','−20分']]},
-        {ttl:'片町の寿司屋「すし匠 みお（見本）」', note:'おまかせ昼握り', reason:'旅の締めに贅沢を。要予約（空きあり）', diffs:[['plus','+¥6,000'],['','予約が1件増えます']]}
+      {id:'d2a', t:'09:40', ttl:'宿 → 金沢駅　送迎バス', note:'朝食 7:30　10:10 金沢駅着', move:true, ride:{m:'bus', label:'送迎バス', min:'30分', yen:'無料'}},
+      {id:'d2b', t:'10:30', ttl:'長町武家屋敷跡', note:'所要60分　土塀の路地を歩く', reason:'駅からバス10分。午前中は人が少ない', cost:0,
+        legIn:{m:'bus', min:10, yen:420, txt:'金沢駅東口 → 香林坊（下車後 徒歩5分）', alt:'タクシーなら10分・約¥1,500'}},
+      {id:'d2c', t:'12:00', ttl:'金沢おでん「こはる（見本）」', note:'車麩・赤巻・ばい貝', reason:'日曜も営業。11:30開店で12時なら待ち少なめ', cost:3000,
+        legIn:{m:'walk', min:8, txt:'武家屋敷跡から香林坊方面へ'}, swap:[
+        {ttl:'金沢カレー「ゴールド亭（見本）」', note:'カツカレー', reason:'早くて安い。金沢のご当地グルメ', legIn:{m:'walk', min:5, txt:'香林坊の交差点そば'}, diffs:[['minus','−¥800'],['minus','−20分']]},
+        {ttl:'片町の寿司屋「すし匠 みお（見本）」', note:'おまかせ昼握り', reason:'旅の締めに贅沢を。要予約（空きあり）', legIn:{m:'walk', min:7, txt:'犀川方面へ、片町の路地'}, diffs:[['plus','+¥6,000'],['','予約が1件増えます']]}
       ]},
-      {id:'d2d', t:'13:30', ttl:'金沢駅 あんと でおみやげ', note:'和菓子・加賀棒茶・干物', reason:'帰りの新幹線まで駅で完結。保冷ロッカーあり'},
-      {id:'d2e', t:'15:14', ttl:'金沢 → 東京　かがやき（見本）', note:'17:48 東京着', move:true}
+      {id:'d2d', t:'13:30', ttl:'金沢駅 あんと でおみやげ', note:'和菓子・加賀棒茶・干物', reason:'帰りの新幹線まで駅で完結。保冷ロッカーあり',
+        legIn:{m:'bus', min:12, yen:420, txt:'香林坊 → 金沢駅東口', alt:'タクシーなら10分・約¥1,500'}},
+      {id:'d2e', t:'15:14', ttl:'金沢 → 東京　かがやき（見本）', note:'5号車 8A・8B　17:48 東京着', move:true, ride:{m:'rail', label:'新幹線', min:'2時間34分'},
+        legIn:{m:'walk', min:3, txt:'あんと → 新幹線改札'}}
     ]
   ];
 
@@ -296,12 +326,20 @@ button{font:inherit; color:inherit}
       {tag:'静かな場所に寄せる', diffs:[['minus','合計 −¥1,400'],['minus','−45分']], lines:['1日目 13:15：21世紀美術館 → 鈴木大拙館'], apply:function(s){ s.pick.d1d = 0; }}
     ]},
     rain:{title:'雨の日版', now:'', opts:[
-      {tag:'屋内中心に組み替え', diffs:[['plus','合計 +¥580'],['minus','屋外 −80分']], lines:['1日目 12:00：兼六園 → 国立工芸館（兼六園の隣、屋内）','2日目 10:30：長町武家屋敷跡 → 金沢市立安江金箔工芸館'], apply:function(s){ s.rain = true; }}
+      {tag:'屋内中心に組み替え', diffs:[['plus','合計 +¥2,300'],['minus','屋外 −80分'],['minus','雨の中の徒歩 −20分'],['','予算を ¥1,940 超えます']], lines:['1日目 12:00：兼六園 → 国立工芸館（兼六園の隣、屋内）','1日目 市場 → 工芸館：徒歩15分 → タクシー8分','2日目 10:30：長町武家屋敷跡 → 金沢市立安江金箔工芸館','2日目 工芸館 → 昼食：徒歩 → バス'], apply:function(s){ s.rain = true; }}
     ]}
   };
   var RAIN = {
-    d1c:{ttl:'国立工芸館', note:'所要60分　兼六園の隣、屋内', reason:'雨でも濡れずに金沢の工芸を見られる', cost:600},
-    d2b:{ttl:'金沢市立安江金箔工芸館', note:'所要45分', reason:'ひがし茶屋街エリアで屋内。金箔の歴史がわかる', cost:620}
+    d1c:{ttl:'国立工芸館', note:'所要60分　兼六園の隣、屋内', reason:'雨でも濡れずに金沢の工芸を見られる', cost:600,
+      legIn:{m:'taxi', min:8, yen:1300, txt:'市場前で乗車。雨の日は歩かない', alt:'バスなら10分・¥420'}},
+    d2b:{ttl:'金沢市立安江金箔工芸館', note:'所要45分', reason:'ひがし茶屋街エリアで屋内。金箔の歴史がわかる', cost:620,
+      legIn:{m:'bus', min:12, yen:420, txt:'金沢駅東口 → 橋場町'}}
+  };
+  // 前の予定との組み合わせで決まる移動（「前>後」、「前>*」）
+  var LEG_PAIR = {
+    '金沢駅「回転寿司 まわる亭（見本）」>兼六園':{m:'bus', min:15, yen:420, txt:'金沢駅東口 → 兼六園下', alt:'タクシーなら10分・約¥1,400'},
+    '金沢駅「回転寿司 まわる亭（見本）」>国立工芸館':{m:'taxi', min:12, yen:1800, txt:'金沢駅東口のタクシー乗り場から'},
+    '金沢市立安江金箔工芸館>*':{m:'bus', min:10, yen:420, txt:'橋場町 → 香林坊', alt:'タクシーなら8分・約¥1,200'}
   };
 
   // ---- 状態 ----
@@ -316,8 +354,39 @@ button{font:inherit; color:inherit}
     if (p != null && it.swap) {
       var alt = it.swap[p];
       base = Object.assign({}, base, {ttl:alt.ttl, note:alt.note, reason:alt.reason});
+      if ('legIn' in alt) base.legIn = alt.legIn;
     }
     return base;
+  }
+  // 宿の変更も反映した、その日の予定と移動
+  function dayItems(d){
+    var out = [], prev = null;
+    DAYS[d].forEach(function(raw){
+      var it = currentItem(raw);
+      if (raw.id === 'd1g' && state.inn === 0) it = Object.assign({}, it, {ttl:'夕食　居酒屋 さかなや（見本）', note:'近江町市場の近く、要予約（空きあり）', reason:'地魚の刺身とのどぐろの炙り。ホテルから歩いて10分', legIn:{m:'walk', min:10, txt:'ホテルから近江町市場方面へ'}});
+      if (raw.id === 'd1f' && state.inn === 0) it = Object.assign({}, it, {ttl:'ホテルにチェックイン', note:'荷物はロッカーから出して持っていく', move:false, ride:null, legIn:{m:'bus', min:15, yen:420, txt:'橋場町 → 金沢駅東口、ホテルまで徒歩2分'}});
+      if (raw.id === 'd2a' && state.inn === 0) it = Object.assign({}, it, {ttl:'チェックアウト', note:'荷物はホテルに預けて出発', move:false, ride:null});
+      var leg = null;
+      if (prev){
+        var k = prev.ttl + '>' + it.ttl, k2 = prev.ttl + '>*';
+        leg = LEG_PAIR[k] || LEG_PAIR[k2] || it.legIn || null;
+      }
+      out.push({raw:raw, it:it, leg:leg});
+      prev = it;
+    });
+    return out;
+  }
+  function legCost(){
+    var sum = 0;
+    [0,1].forEach(function(d){ dayItems(d).forEach(function(x){ if (x.leg && x.leg.yen) sum += x.leg.yen; }); });
+    return sum;
+  }
+  var MODE = {walk:'徒歩', bus:'バス', taxi:'タクシー', rail:'電車'};
+  function legHtml(l){
+    return '<div class="legline"><span class="mode m-' + l.m + '">' + MODE[l.m] + '</span>' +
+      '<span class="num">' + l.min + '分</span><span>' + l.txt + '</span>' +
+      (l.yen ? '<span class="num">' + yen(l.yen) + '（2名）</span>' : '') + '</div>' +
+      (l.alt ? '<div class="legalt">' + l.alt + '</div>' : '');
   }
   function deltaOf(){
     var d = 0;
@@ -331,8 +400,10 @@ button{font:inherit; color:inherit}
 
   // ---- 描画 ----
   var lastChanged = [];
+  var BASE_LEG = null;
   function render(){
-    var total = 119640 + deltaOf();
+    if (BASE_LEG == null) BASE_LEG = legCost();
+    var total = 119640 + deltaOf() + legCost() - BASE_LEG;
     document.getElementById('total').textContent = yen(total);
     var within = total <= BUDGET;
     document.getElementById('budget').textContent = within ? ('予算 ' + yen(BUDGET) + ' 以内') : ('予算を ' + yen(total - BUDGET) + ' 超過');
@@ -350,14 +421,23 @@ button{font:inherit; color:inherit}
 
     var tl = document.getElementById('timeline');
     tl.innerHTML = '';
-    DAYS[state.day].forEach(function(raw){
-      var it = currentItem(raw);
-      if (raw.id === 'd1g' && state.inn === 0) it = Object.assign({}, it, {ttl:'夕食　居酒屋 さかなや（見本）', note:'近江町市場の近く、要予約（空きあり）', reason:'地魚の刺身とのどぐろの炙り。宿から歩いて5分'});
-      if (raw.id === 'd1f' && state.inn === 0) it = Object.assign({}, it, {ttl:'ホテルにチェックイン', note:'金沢駅から徒歩2分', move:false});
-      if (raw.id === 'd2a' && state.inn === 0) it = Object.assign({}, it, {ttl:'チェックアウト', note:'荷物はホテルに預けて出発', move:false});
+    var walk = 0, bus = 0, taxi = 0, fare = 0;
+    dayItems(state.day).forEach(function(x){
+      var raw = x.raw, it = x.it;
+      if (x.leg){
+        var lg = document.createElement('li');
+        lg.className = 'leg';
+        lg.innerHTML = '<span aria-hidden="true">移動</span><div class="body' + (lastChanged.indexOf(raw.id) >= 0 ? ' changed' : '') + '">' + legHtml(x.leg) + '</div>';
+        tl.appendChild(lg);
+        if (x.leg.m === 'walk') walk += x.leg.min;
+        if (x.leg.m === 'bus') bus++;
+        if (x.leg.m === 'taxi') taxi++;
+        fare += x.leg.yen || 0;
+      }
       var li = document.createElement('li');
       if (it.move) li.className = 'move';
       var html = '<time class="num">' + it.t + '</time><div class="body' + (lastChanged.indexOf(raw.id) >= 0 ? ' changed' : '') + '">' +
+        (it.move && it.ride ? '<div class="legline"><span class="mode m-' + it.ride.m + '">' + it.ride.label + '</span><span class="num">' + it.ride.min + '</span>' + (it.ride.yen ? '<span>' + it.ride.yen + '</span>' : '') + '</div>' : '') +
         '<div class="ttl">' + it.ttl + '</div>' +
         (it.note ? '<div class="note">' + it.note + '</div>' : '') +
         (it.reason ? '<div class="reason">' + it.reason + '</div>' : '');
@@ -367,6 +447,10 @@ button{font:inherit; color:inherit}
       tl.appendChild(li);
     });
     tl.querySelectorAll('.swap').forEach(function(b){ b.onclick = function(){ openItemSheet(b.dataset.id); }; });
+    var parts = ['<b>この日の市内移動</b>', '徒歩 計' + walk + '分', 'バス ' + bus + '回'];
+    if (taxi) parts.push('タクシー ' + taxi + '回');
+    parts.push('<span class="num">交通費 ' + yen(fare) + '（2名）</span>');
+    document.getElementById('daymove').innerHTML = parts.map(function(p){ return '<span>' + p + '</span>'; }).join('');
   }
 
   // ---- シート ----

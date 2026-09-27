@@ -138,6 +138,14 @@ p{margin:0}
 .sched li.move .what b{color:var(--accent)}
 .sched li.move .what b::before{content:"→ "; font-weight:700}
 .sched li.gather time{color:var(--stamp)}
+.sched li.leg{padding:4px 0; border-bottom:1px dashed var(--rule); background:transparent}
+.sched .how{display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; font-size:12.5px; color:var(--sub); line-height:1.5}
+.sched .how::before{content:"↓"; color:var(--accent); font-weight:700; margin-left:-2px}
+.sched .how i{font-style:normal; font-size:11px; font-weight:700; border:1.5px solid currentColor; border-radius:3px; padding:0 5px; background:var(--paper)}
+.sched .how i.m-walk{color:var(--accent)}
+.sched .how i.m-bus{color:var(--stamp)}
+.sched .how i.m-taxi{color:var(--tape-ink); background:var(--tape); border-color:var(--tape)}
+.sched .how i.m-rail{color:var(--paper); background:var(--accent); border-color:var(--accent)}
 .sched li.gather .what b{color:var(--stamp)}
 .qr{width:58px; height:58px; display:grid; place-items:center; background:#fff; padding:3px; border:1px solid var(--rule)}
 .qr canvas, .qr img{width:52px!important; height:52px!important; display:block}
@@ -290,17 +298,24 @@ p{margin:0}
     <div class="dayhead"><h2>一日目</h2><span class="date tabnum">10月10日（土）　晴れ 23℃ / 15℃</span></div>
     <ol class="sched">
       <li class="gather"><time>07:20</time><div class="what"><b>東京駅 集合</b><span>北陸新幹線 中央乗換口の前。駅弁は集合前に買っておく</span></div><div class="qr" data-q="東京駅 北陸新幹線 中央乗換口"></div></li>
-      <li class="move"><time>07:36</time><div class="what"><b>北陸新幹線 かがやき（見本）</b><span>7号車 12D・12E　<em>E席は立山連峰側</em></span></div><div></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-walk">徒歩</i>3分　改札を入って新幹線ホームへ</div><div></div></li>
+      <li class="move"><time>07:36</time><div class="what"><b>北陸新幹線 かがやき（見本）</b><span>7号車 12D・12E　<em>E席は立山連峰側</em>　約2時間半</span></div><div></div></li>
       <li><time>10:05</time><div class="what"><b>金沢駅 着</b><span>鼓門の前で最初の1枚。荷物は駅のコインロッカーへ</span></div><div class="qr" data-q="金沢駅 鼓門"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-bus">バス</i>7分　金沢駅東口 → 武蔵ヶ辻・近江町市場　¥210/人（歩くなら15分）</div><div></div></li>
       <li><time>10:30</time><div class="what"><b>近江町市場「いちば亭」海鮮丼</b><span><em>11時を過ぎると行列</em>。先に並ぶ</span></div><div class="qr" data-q="近江町市場"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-walk">徒歩</i>15分　百万石通りを南へ 約1.1km</div><div></div></li>
       <li><time>12:00</time><div class="what"><b>兼六園</b><span>所要60分。桂坂口から入り、霞ヶ池をぐるっと一周</span></div><div class="qr" data-q="兼六園 桂坂口"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-walk">徒歩</i>5分　真弓坂口を出てすぐ</div><div></div></li>
       <li><time>13:15</time><div class="what"><b>金沢21世紀美術館</b><span>所要90分。「スイミング・プール」の下に入るなら先に展覧会チケットを買う</span></div><div class="qr" data-q="金沢21世紀美術館"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-bus">バス</i>15分　広坂 → 橋場町（城下まち金沢周遊バス）¥210/人</div><div></div></li>
       <li><time>15:00</time><div class="what"><b>ひがし茶屋街</b><span>金箔ソフトを食べて、町家カフェで休憩</span></div><div class="qr" data-q="ひがし茶屋街"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-bus">バス</i>15分　橋場町 → 金沢駅東口　ロッカーの荷物を取って西口へ</div><div></div></li>
       <li class="gather"><time>16:30</time><div class="what"><b>金沢駅西口 送迎バス乗り場</b><span>ロッカーの荷物を忘れずに。バスは16:40発</span></div><div class="qr" data-q="金沢駅 西口"></div></li>
-      <li><time>17:15</time><div class="what"><b>宿 着・チェックイン</b><span>夕食前にひとっ風呂</span></div><div></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-bus">送迎バス</i>30分　16:40発　無料</div><div></div></li>
+      <li><time>17:10</time><div class="what"><b>宿 着・チェックイン</b><span>夕食前にひとっ風呂</span></div><div></div></li>
       <li><time>18:30</time><div class="what"><b>夕食（部屋食）</b><span>のどぐろと治部煮の秋の会席</span></div><div></div></li>
     </ol>
-    <p class="qr-cap">QRコードをスマホで読むと、その場所の地図が開きます。</p>
+    <p class="qr-cap">↓ の行は次の場所までの行き方です。QRコードをスマホで読むと、その場所の地図が開きます。</p>
     <div class="folio">— 3 —</div>
   </section>
 
@@ -310,11 +325,16 @@ p{margin:0}
     <ol class="sched">
       <li><time>07:30</time><div class="what"><b>朝食</b><span>宿の食事処。のどぐろの干物</span></div><div></div></li>
       <li class="gather"><time>09:30</time><div class="what"><b>チェックアウト・送迎バス</b><span>9:40発、金沢駅西口まで約30分</span></div><div></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-bus">送迎バス</i>30分　9:40発　金沢駅西口着</div><div></div></li>
+      <li class="leg"><span></span><div class="how"><i class="m-bus">バス</i>10分　金沢駅東口 → 香林坊（下車後 徒歩5分）¥210/人</div><div></div></li>
       <li><time>10:30</time><div class="what"><b>長町武家屋敷跡</b><span>所要60分。土塀の路地を歩く</span></div><div class="qr" data-q="長町武家屋敷跡"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-walk">徒歩</i>8分　香林坊方面へ</div><div></div></li>
       <li><time>12:00</time><div class="what"><b>昼食「金沢おでん こはる」</b><span>車麩と赤巻。<em>11:30開店、日曜も営業</em></span></div><div class="qr" data-q="金沢おでん 香林坊"></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-bus">バス</i>12分　香林坊 → 金沢駅東口　¥210/人</div><div></div></li>
       <li><time>13:30</time><div class="what"><b>金沢駅 あんと でおみやげ</b><span>買うものは「持ち物」ページの下に書いておく</span></div><div class="qr" data-q="金沢百番街 あんと"></div></li>
       <li class="gather"><time>15:00</time><div class="what"><b>新幹線改札 集合</b><span>駅弁と飲み物を買ってから</span></div><div></div></li>
-      <li class="move"><time>15:14</time><div class="what"><b>北陸新幹線 かがやき（見本）</b><span>5号車 8A・8B</span></div><div></div></li>
+<li class="leg"><span></span><div class="how"><i class="m-walk">徒歩</i>3分　あんと → 新幹線改札</div><div></div></li>
+      <li class="move"><time>15:14</time><div class="what"><b>北陸新幹線 かがやき（見本）</b><span>5号車 8A・8B　約2時間半</span></div><div></div></li>
       <li><time>17:48</time><div class="what"><b>東京駅 着・解散</b><span>おつかれさまでした</span></div><div></div></li>
     </ol>
     <div class="folio">— 4 —</div>
@@ -335,7 +355,7 @@ p{margin:0}
       <dt>宿</dt><dd><b>湯涌温泉 あかり荘（見本）</b>　和室10畳</dd>
       <dt>住所</dt><dd>石川県金沢市湯涌町（見本）</dd>
       <dt>電話</dt><dd>076-000-0000（見本）</dd>
-      <dt>チェックイン</dt><dd>15:00〜　（到着予定 17:15）</dd>
+      <dt>チェックイン</dt><dd>15:00〜　（到着予定 17:10）</dd>
       <dt>チェックアウト</dt><dd>10:00まで</dd>
       <dt>食事</dt><dd>夕食 18:30 部屋食 ／ 朝食 7:30 食事処</dd>
       <dt>送迎</dt><dd>金沢駅西口 16:40発 ／ 宿 9:40発</dd>
@@ -366,7 +386,8 @@ p{margin:0}
         <tr><td>宿 1泊2食 <small>2名</small></td><td>¥44,000</td></tr>
         <tr><td>食事 <small>市場・おでん・おやつ</small></td><td>¥9,000</td></tr>
         <tr><td>入場料 <small>美術館・兼六園</small></td><td>¥2,640</td></tr>
-        <tr><td>予備費 <small>おみやげ・ロッカー</small></td><td>¥8,000</td></tr>
+        <tr><td>市内の移動 <small>バス6回・2名</small></td><td>¥2,520</td></tr>
+        <tr><td>予備費 <small>おみやげ・ロッカー</small></td><td>¥5,480</td></tr>
         <tr class="total"><td>合計</td><td>¥119,640</td></tr>
       </tbody>
     </table>
