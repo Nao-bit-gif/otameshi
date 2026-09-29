@@ -8,13 +8,13 @@ indicator("Adaptive Vol Momentum", overlay = false, precision = 3)
 momLen    = input.int(14, "Momentum Period", minval = 1)
 atrLen    = input.int(14, "ATR Period", minval = 1)
 zLen      = input.int(100, "Z-Score Lookback", minval = 2)
-useER     = input.bool(true, "Blend with Kaufman ER (design②)")
+useER     = input.bool(true, "Blend with Kaufman ER (design 2)")
 erLen     = input.int(14, "Efficiency Ratio Period", minval = 1)
 rsiLen    = input.int(14, "RSI Period", minval = 1)
 smoothLen = input.int(3, "Signal Smoothing (EMA)", minval = 1)
 clipVal   = input.float(4.0, "Clip (+/-)", minval = 1.0)
 
-// --- design①: ATR-normalized momentum, Z-scored over zLen ---
+// --- design 1: ATR-normalized momentum, Z-scored over zLen ---
 atrVal  = ta.atr(atrLen)
 normMom = atrVal != 0 ? (close - close[momLen]) / atrVal : 0.0
 
@@ -28,7 +28,7 @@ rsiVal     = ta.rsi(close, rsiLen)
 rangeComp0 = (rsiVal - 50.0) / 12.5
 rangeComp  = math.max(math.min(rangeComp0, clipVal), -clipVal)
 
-// --- design②: Kaufman efficiency ratio, 1 = pure trend, 0 = pure noise ---
+// --- design 2: Kaufman efficiency ratio, 1 = pure trend, 0 = pure noise ---
 direction  = math.abs(close - close[erLen])
 volatility = math.sum(math.abs(close - close[1]), erLen)
 er         = volatility != 0 ? direction / volatility : 0.0
