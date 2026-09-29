@@ -36,8 +36,8 @@ er         = volatility != 0 ? direction / volatility : 0.0
 final  = useER ? er * trendZ + (1 - er) * rangeComp : trendZ
 signal = ta.ema(final, smoothLen)
 
-plot(final,  "AdaptiveVolMomentum", color = color.new(#1e88e5, 0), linewidth = 2)
-plot(signal, "Signal", color = color.new(#b0bec5, 0))
+plot(final,  "AdaptiveVolMomentum", color = color.new(#b0bec5, 0), linewidth = 2)
+plot(signal, "Signal", color = color.new(#1e88e5, 0))
 hline(2.0, "OB", color = color.gray, linestyle = hline.style_dotted)
 hline(-2.0, "OS", color = color.gray, linestyle = hline.style_dotted)
 hline(0.0, "Mid", color = color.gray, linestyle = hline.style_dotted)
