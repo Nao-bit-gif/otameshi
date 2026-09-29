@@ -1,18 +1,21 @@
 // ATR-normalized momentum, Z-scored, optionally blended with an RSI-based
 // range component via the Kaufman Efficiency Ratio. Uses ta.atr / ta.rsi
 // (Wilder RMA) so results match the MQL4/MQL5 ports of this indicator
-// bar-for-bar.
+// bar-for-bar. The pane background is shaded by regime (ER >= threshold
+// = trend, else range) to match the MQL4/MQL5 ports.
 //@version=5
 indicator("Adaptive Vol Momentum", overlay = false, precision = 3)
 
-momLen    = input.int(14, "Momentum Period", minval = 1)
-atrLen    = input.int(14, "ATR Period", minval = 1)
-zLen      = input.int(100, "Z-Score Lookback", minval = 2)
-useER     = input.bool(true, "Blend with Kaufman ER (design 2)")
-erLen     = input.int(14, "Efficiency Ratio Period", minval = 1)
-rsiLen    = input.int(14, "RSI Period", minval = 1)
-smoothLen = input.int(3, "Signal Smoothing (EMA)", minval = 1)
-clipVal   = input.float(4.0, "Clip (+/-)", minval = 1.0)
+momLen     = input.int(14, "Momentum Period", minval = 1)
+atrLen     = input.int(14, "ATR Period", minval = 1)
+zLen       = input.int(100, "Z-Score Lookback", minval = 2)
+useER      = input.bool(true, "Blend with Kaufman ER (design 2)")
+erLen      = input.int(14, "Efficiency Ratio Period", minval = 1)
+rsiLen     = input.int(14, "RSI Period", minval = 1)
+smoothLen  = input.int(3, "Signal Smoothing (EMA)", minval = 1)
+clipVal    = input.float(4.0, "Clip (+/-)", minval = 1.0)
+showBg     = input.bool(true, "Show Regime Background", group = "Regime Background")
+erThresh   = input.float(0.3, "ER Trend Threshold", minval = 0.0, maxval = 1.0, group = "Regime Background")
 
 // --- design 1: ATR-normalized momentum, Z-scored over zLen ---
 atrVal  = ta.atr(atrLen)
@@ -35,6 +38,9 @@ er         = volatility != 0 ? direction / volatility : 0.0
 
 final  = useER ? er * trendZ + (1 - er) * rangeComp : trendZ
 signal = ta.ema(final, smoothLen)
+
+// trend regime = light orange, range regime = light blue
+bgcolor(showBg ? (er >= erThresh ? color.new(#e08b2f, 90) : color.new(#1e88e5, 90)) : na)
 
 plot(final,  "AdaptiveVolMomentum", color = color.new(#b0bec5, 0), linewidth = 2)
 plot(signal, "Signal", color = color.new(#1e88e5, 0))
