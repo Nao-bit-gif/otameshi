@@ -14,7 +14,7 @@ from PIL import Image
 
 SS = 2            # render scale relative to the reference
 FPS = 30
-DUR = 8.0
+DUR = 9.8
 N = int(DUR * FPS)
 rng = np.random.default_rng(7)
 
@@ -203,6 +203,7 @@ SWEEP0, SWEEP1 = 4.35, 5.55      # final specular sweep across the logo
 TO_WHITE0, TO_WHITE1 = 5.7, 6.5
 CAM_END = 6.6
 EXACT0, EXACT1 = 6.7, 7.0        # dissolve to the untouched reference
+FADE0, FADE1 = 7.8, 9.4          # whole frame slowly fades to black
 
 
 def lock_time(i):
@@ -368,6 +369,8 @@ proc = subprocess.Popen([
 
 pad_y0, pad_y1 = by0 - 40, by1 + 40
 pad_x0, pad_x1 = bx0 - 200, bx1 + 200
+_vy, _vx = np.mgrid[0:H, 0:W].astype(np.float32)
+VIG = np.clip(np.hypot((_vx - W / 2) / (W / 2), (_vy - H * 0.45) / (H / 2)) / 1.2, 0, 1) ** 1.5
 for f in range(N):
     t = f / FPS
     if t >= EXACT1:
@@ -402,6 +405,11 @@ for f in range(N):
     if t < CAM_END:
         frame = cv2.warpAffine(frame, camera(t), (W, H), flags=cv2.INTER_CUBIC,
                                borderMode=cv2.BORDER_REFLECT)
+    if t > FADE0:
+        # Edges lead the fade slightly, so the logo is the last thing to go.
+        u = (t - FADE0) / (FADE1 - FADE0)
+        k = np.clip(smooth(u) * 1.0 + VIG * 0.35 * np.sin(np.pi * np.clip(u, 0, 1)), 0, 1)
+        frame = frame * (1 - k[..., None])
     proc.stdin.write(np.clip(frame, 0, 255).astype(np.uint8).tobytes())
 proc.stdin.close()
 proc.wait()
