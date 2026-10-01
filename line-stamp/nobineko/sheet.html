@@ -87,7 +87,7 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch}
 
 <div id="list"></div>
 
-<footer>この絵は動きとタイミングを確認するための下絵です。清書した絵に差し替えても、フレーム構成と再生時間はそのまま使えます。合計再生時間は、どれもLINEの上限である4秒以内です。</footer>
+<footer>この絵は申請用に清書した版です。合計再生時間は、どれもLINEの上限である4秒以内です。</footer>
 </div>
 
 <script>
@@ -106,7 +106,7 @@ function eye(type,x,y,side){
   const kiri=`<path d="M${outer} ${y-18} L${inner} ${y-12}" ${S(4)}/>`;
   const dot=(cx,cy,r,hx,hy,hr)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${OL}"/><circle cx="${hx}" cy="${hy}" r="${hr}" fill="#fff"/>`;
   switch(type){
-    case 'open': return dot(x,y,6.5,x+2,y-2,2);
+    case 'open': return `<ellipse cx="${x}" cy="${y}" rx="6.5" ry="8" fill="${OL}"/><circle cx="${x+2.2}" cy="${y-3}" r="2.6" fill="#fff"/><circle cx="${x-2}" cy="${y+3}" r="1.2" fill="#fff"/>`;
     case 'happy': return `<path d="M${x-9} ${y+3} q9 -11 18 0" ${S(4)}/>`;
     case 'sleep': return `<path d="M${x-9} ${y-1} q9 8 18 0" ${S(4)}/>`;
     case 'squint': return `<path d="M${x+side*7} ${y-6} l${-side*12} 6 l${side*12} 6" ${S(4)}/>`;
@@ -124,7 +124,7 @@ function eyes(type,hx,hy){
   return eye(pair[0],hx-24,hy-2,-1)+eye(pair[1],hx+24,hy-2,1);
 }
 function mouth(type,hx,hy){
-  const y=hy+14,nose=`<ellipse cx="${hx}" cy="${hy+8}" rx="4.5" ry="3.5" fill="#ff7f9f"/>`;
+  const y=hy+14,nose=`<path d="M${hx-5} ${hy+5.5} h10 l-5 5.5 Z" fill="#ff7f9f" stroke="#e0607c" stroke-width="2" stroke-linejoin="round"/>`;
   switch(type){
     case 'w': return nose+`<path d="M${hx-10} ${y+1} q5 6 10 0 q5 6 10 0" ${S(3.5)}/>`;
     case 'smile': return `<path d="M${hx-10} ${y+1} q10 15 20 0 Z" fill="#e05a6d" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/>`+nose;
@@ -187,8 +187,14 @@ function confetti(o,t){
   return s;
 }
 
+let UID=0;
+const FUR_S='#848d99',STRIPE='#6c7581';
+function headPath(hx,hy,a,b){
+  return `M${hx} ${hy-b} C${hx+a*.62} ${hy-b} ${hx+a} ${hy-b*.55} ${hx+a} ${hy+b*.02} L${hx+a+8} ${hy+b*.2} L${hx+a-1} ${hy+b*.3} L${hx+a+5} ${hy+b*.47} C${hx+a*.8} ${hy+b*.95} ${hx+a*.42} ${hy+b} ${hx} ${hy+b} C${hx-a*.42} ${hy+b} ${hx-a*.8} ${hy+b*.95} ${hx-a-5} ${hy+b*.47} L${hx-a+1} ${hy+b*.3} L${hx-a-8} ${hy+b*.2} L${hx-a} ${hy+b*.02} C${hx-a} ${hy-b*.55} ${hx-a*.62} ${hy-b} ${hx} ${hy-b} Z`;
+}
 function cat(p,cap){
   p=Object.assign({},D,p);
+  const id=++UID;
   const m=p.melt, w=p.w+m*110, h=Math.max(22,p.h-m*56), cx=160+p.dx, bottom=G-6, top=bottom-h;
   const hrx=54+m*8, hry=46-m*12, hx=cx+(p.lie?-(w/2)+40:p.headDx), hy=top-26+m*18+(p.lie?20:p.headDy), kx=hrx/54;
   const c={cx,top,w,hx,hy};
@@ -196,59 +202,69 @@ function cat(p,cap){
   const noLimbs=m>.3;
   const arms=noLimbs?['none','none']:p.arms;
   const shL=[cx-w/2+10,top+16], shR=[cx+w/2-10,top+16];
-  let back='',front='',fx='';
-  // popper geometry
-  let popMouth=null;
+  let back='',front='',fx='',popMouth=null;
+  const paw=(e)=>`<circle cx="${e[0]}" cy="${e[1]}" r="11" fill="${FUR}" stroke="${OL}" stroke-width="4"/><circle cx="${e[0]}" cy="${e[1]}" r="4" fill="${PAD}"/>`;
   [[arms[0],-1,shL],[arms[1],1,shR]].forEach(([t,s,sh])=>{
     const e=armEnd(t,s,sh,c); if(!e) return;
-    let piece=arm(sh,e);
+    let piece=arm(sh,e)+(t==='popperReady'||t==='popper'?'':paw(e));
     if(t==='popper'||t==='popperReady'){
       const ang=(t==='popper'?-55:-80)*Math.PI/180, L=42, ux=Math.cos(ang), uy=Math.sin(ang), nx=-uy, ny=ux;
       const mx=e[0]+ux*L, my=e[1]+uy*L; popMouth=[mx,my];
-      piece+=`<path d="M${e[0]+nx*4} ${e[1]+ny*4} L${mx+nx*15} ${my+ny*15} L${mx-nx*15} ${my-ny*15} L${e[0]-nx*4} ${e[1]-ny*4} Z" fill="#ffd23f" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/><path d="M${e[0]+ux*20+nx*9} ${e[1]+uy*20+ny*9} L${e[0]+ux*20-nx*9} ${e[1]+uy*20-ny*9}" stroke="#ff6b6b" stroke-width="5"/>`;
+      piece+=`<path d="M${e[0]+nx*4} ${e[1]+ny*4} L${mx+nx*15} ${my+ny*15} L${mx-nx*15} ${my-ny*15} L${e[0]-nx*4} ${e[1]-ny*4} Z" fill="#ffd23f" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/><path d="M${e[0]+ux*14+nx*7} ${e[1]+uy*14+ny*7} L${e[0]+ux*14-nx*7} ${e[1]+uy*14-ny*7} M${e[0]+ux*28+nx*11} ${e[1]+uy*28+ny*11} L${e[0]+ux*28-nx*11} ${e[1]+uy*28-ny*11}" stroke="#ff6b6b" stroke-width="5"/>`+paw(e);
     }
     if(RAISED.has(t)) back+=piece; else front+=piece;
   });
   const tailT=noLimbs&&!['flat','twitch'].includes(p.tail)?'flat':p.tail;
   const tailBehind=!['curl','front'].includes(tailT);
-  const tailSvg=tail(tailT,p.tailAng,bx,by,tS,c);
-  // ears
-  const ear=(s)=>{
-    if(p.ears==='down'){
-      const pts=[[hx+s*50*kx,hy-hry*.4],[hx+s*82*kx,hy-hry*.85],[hx+s*28*kx,hy-hry*.95]];
-      return earPoly(pts);
-    }
-    return earPoly([[hx+s*46*kx,hy-hry*.55],[hx+s*40*kx,hy-hry-22],[hx+s*12*kx,hy-hry*.9]]);
-  };
+  let tailSvg=tail(tailT,p.tailAng,bx,by,tS,c);
+  const td=tailPath(tailT,bx,by,tS,c);
+  const stripes=`<path d="${td}" stroke="${STRIPE}" stroke-width="9" stroke-dasharray="6 12" stroke-dashoffset="-14" fill="none"/>`;
+  tailSvg=p.tailAng?tailSvg.replace('</g>',stripes+'</g>'):tailSvg+stripes;
   function earPoly(pts){
     const cx_=(pts[0][0]+pts[1][0]+pts[2][0])/3, cy_=(pts[0][1]+pts[1][1]+pts[2][1])/3;
     const inner=pts.map(([x,y])=>[cx_+(x-cx_)*.55,cy_+(y-cy_)*.55+3]);
     const f=a=>a.map(q=>q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' L');
-    return `<path d="M${f(pts)} Z" fill="${FUR}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M${f(inner)} Z" fill="${PAD}"/>`;
+    const ic=[(inner[0][0]+inner[2][0])/2,(inner[0][1]+inner[2][1])/2];
+    return `<path d="M${f(pts)} Z" fill="${FUR}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M${f(inner)} Z" fill="${PAD}" stroke="${PAD}" stroke-width="3" stroke-linejoin="round"/>`+
+      `<path d="M${ic[0].toFixed(1)} ${ic[1].toFixed(1)} L${((ic[0]+inner[1][0])/2).toFixed(1)} ${((ic[1]+inner[1][1])/2).toFixed(1)}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`;
   }
-  let body=`<rect x="${cx-w/2}" y="${top}" width="${w}" height="${h}" rx="${Math.min(w,h)/2}" fill="${FUR}" stroke="${OL}" stroke-width="5"/>`;
-  if(h>=44&&m<.4&&!p.lie) body+=`<rect x="${cx-w*.25}" y="${top+12}" width="${w*.5}" height="${h-20}" rx="${Math.min(w*.25,(h-20)/2)}" fill="#fff"/>`;
-  let head=ear(-1)+ear(1)+`<ellipse cx="${hx}" cy="${hy}" rx="${hrx}" ry="${hry}" fill="${FUR}" stroke="${OL}" stroke-width="5"/>`;
-  head+=`<ellipse cx="${hx-36}" cy="${hy+10}" rx="9" ry="5" fill="${CHEEK}"/><ellipse cx="${hx+36}" cy="${hy+10}" rx="9" ry="5" fill="${CHEEK}"/>`;
+  const ear=(s)=>p.ears==='down'
+    ? earPoly([[hx+s*50*kx,hy-hry*.4],[hx+s*82*kx,hy-hry*.85],[hx+s*28*kx,hy-hry*.95]])
+    : earPoly([[hx+s*46*kx,hy-hry*.55],[hx+s*40*kx,hy-hry-22],[hx+s*12*kx,hy-hry*.9]]);
+  const rx=Math.min(w,h)/2;
+  let body=`<clipPath id="b${id}"><rect x="${cx-w/2}" y="${top}" width="${w}" height="${h}" rx="${rx}"/></clipPath>`+
+    `<rect x="${cx-w/2}" y="${top}" width="${w}" height="${h}" rx="${rx}" fill="${FUR}"/>`+
+    `<g clip-path="url(#b${id})"><ellipse cx="${cx+w*.62}" cy="${top+h*.65}" rx="${w*.5}" ry="${h*.8}" fill="${FUR_S}"/></g>`;
+  if(h>=44&&m<.4&&!p.lie) body+=`<ellipse cx="${cx}" cy="${top+h*.56}" rx="${w*.27}" ry="${(h-18)/2}" fill="#fff"/><ellipse cx="${cx+w*.1}" cy="${top+h*.66}" rx="${w*.12}" ry="${(h-18)/3}" fill="#eef0f4"/>`;
+  body+=`<rect x="${cx-w/2}" y="${top}" width="${w}" height="${h}" rx="${rx}" fill="none" stroke="${OL}" stroke-width="5"/>`;
+  const hp=headPath(hx,hy,hrx,hry);
+  let head=ear(-1)+ear(1)+`<clipPath id="h${id}"><path d="${hp}"/></clipPath><path d="${hp}" fill="${FUR}"/>`+
+    `<g clip-path="url(#h${id})"><ellipse cx="${hx+hrx*.62}" cy="${hy+hry*.7}" rx="${hrx*.8}" ry="${hry*.62}" fill="${FUR_S}"/><ellipse cx="${hx}" cy="${hy+hry*.62}" rx="${hrx*.42}" ry="${hry*.36}" fill="#f4f5f8"/></g>`+
+    `<path d="M${hx} ${hy-hry+4} v13 M${hx-12} ${hy-hry+7} l3 11 M${hx+12} ${hy-hry+7} l-3 11" stroke="${STRIPE}" stroke-width="4.5" stroke-linecap="round"/>`+
+    `<path d="${hp}" fill="none" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/>`;
+  head+=`<ellipse cx="${hx-36}" cy="${hy+10}" rx="10" ry="6" fill="${CHEEK}" opacity=".8"/><ellipse cx="${hx+36}" cy="${hy+10}" rx="10" ry="6" fill="${CHEEK}" opacity=".8"/>`;
   if(p.blush) head+=`<path d="M${hx-42} ${hy+7} l-3 6 M${hx-36} ${hy+7} l-3 6 M${hx+36} ${hy+7} l-3 6 M${hx+42} ${hy+7} l-3 6" ${S(2)}/>`;
-  head+=`<path d="M${hx-hrx+4} ${hy+4} h-20 M${hx-hrx+4} ${hy+12} l-18 6 M${hx+hrx-4} ${hy+4} h20 M${hx+hrx-4} ${hy+12} l18 6" ${S(3)}/>`;
+  head+=`<path d="M${hx-hrx+2} ${hy+6} h-18 M${hx-hrx+2} ${hy+13} l-16 6 M${hx+hrx-2} ${hy+6} h18 M${hx+hrx-2} ${hy+13} l16 6" ${S(2.6)}/>`;
   head+=eyes(p.eyes,hx,hy)+mouth(p.mouth,hx,hy);
   const f=p.fx||{};
-  if(f.bigHeart) fx+=`<path d="${heart(cx,top+40,f.bigHeart*1.6)}" fill="#ff8fa3" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/>`;
+  if(f.bigHeart) fx+=`<path d="${heart(cx,top+40,f.bigHeart*1.6)}" fill="#ff8fa3" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="${cx-10}" cy="${top+30}" rx="5" ry="3.5" fill="#fff" opacity=".8"/>`;
   (f.hearts||[]).forEach(([x,y,s])=>fx+=`<path d="${heart(x,y,s*1.4)}" fill="#ff8fa3" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/>`);
   (f.stars||[]).forEach(([x,y,r])=>fx+=`<path d="${star(x,y,r)}" fill="#ffd23f" stroke="${OL}" stroke-width="2.5" stroke-linejoin="round"/>`);
   if(f.kira) fx+=`<path d="${star(hx+46,hy-34,13)}" fill="#ffd23f" stroke="${OL}" stroke-width="2.5" stroke-linejoin="round"/><path d="${star(hx+64,hy-12,7)}" fill="#ffd23f" stroke="${OL}" stroke-width="2" stroke-linejoin="round"/>`;
   (f.tears||[]).forEach(t=>fx+=`<path d="${drop(hx+t.side*24,hy+t.y)}" fill="#9ed8ff" stroke="${OL}" stroke-width="3"/>`);
-  if(f.zzz) fx+=`<text x="${hx+40}" y="${hy-40}" style="font-family:var(--display)" font-weight="800" font-size="24" fill="#4a7fa8" paint-order="stroke" stroke="#fff" stroke-width="6">Z</text><text x="${hx+62}" y="${hy-62}" style="font-family:var(--display)" font-weight="800" font-size="18" fill="#4a7fa8" paint-order="stroke" stroke="#fff" stroke-width="6">z</text>`;
-  if(f.breath) fx+=`<text x="${hx+46}" y="${hy-34}" style="font-family:var(--display)" font-weight="800" font-size="20" fill="#7048e8" paint-order="stroke" stroke="#fff" stroke-width="6">${f.breath}</text>`;
+  const tx=(x,y,sz,col,txt)=>`<text x="${x}" y="${y}" style="font-family:var(--display)" font-weight="800" font-size="${sz}" fill="${col}" paint-order="stroke" stroke="#fff" stroke-width="6" stroke-linejoin="round">${txt}</text>`;
+  if(f.zzz) fx+=tx(hx+40,hy-40,24,'#4a7fa8','Z')+tx(hx+62,hy-62,18,'#4a7fa8','z');
+  if(f.breath) fx+=tx(hx+46,hy-34,20,'#7048e8',f.breath);
   if(f.confetti!=null){const o=f.o||popMouth; if(o) fx+=confetti(o,f.confetti)}
   if(f.bang&&popMouth){const [x,y]=popMouth;[[-20,-14],[-6,-24],[12,-22],[24,-8]].forEach(([a,b])=>fx+=`<path d="M${x+a*.6} ${y+b*.6} l${a*.7} ${b*.7}" ${S(4)}/>`)}
+  const foot=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="17" ry="9.5" fill="${FUR}" stroke="${OL}" stroke-width="5"/><ellipse cx="${x}" cy="${y+2}" rx="6" ry="4" fill="${PAD}"/><circle cx="${x-7}" cy="${y-4}" r="2.4" fill="${PAD}"/><circle cx="${x}" cy="${y-5.5}" r="2.4" fill="${PAD}"/><circle cx="${x+7}" cy="${y-4}" r="2.4" fill="${PAD}"/>`;
   let feet='';
-  if(p.lie) feet+=`<ellipse cx="${cx+w/2+2}" cy="${G-4}" rx="18" ry="9" fill="${FUR}" stroke="${OL}" stroke-width="5"/><ellipse cx="${cx+w/2+8}" cy="${G-4}" rx="5" ry="4" fill="${PAD}"/>`;
-  if(p.feet&&!noLimbs){[-22,22].forEach(o=>feet+=`<ellipse cx="${cx+o}" cy="${G-2}" rx="17" ry="9" fill="${FUR}" stroke="${OL}" stroke-width="5"/><ellipse cx="${cx+o}" cy="${G}" rx="6" ry="4" fill="${PAD}"/>`)}
-  const capSvg=`<text x="${cap.x}" y="${cap.y}" style="font-family:var(--display)" font-weight="800" font-size="${cap.size}" fill="${cap.color}" paint-order="stroke" stroke="#fff" stroke-width="9" stroke-linejoin="round">${cap.text}</text>`;
+  if(p.lie) feet+=foot(cx+w/2+2,G-4);
+  if(p.feet&&!noLimbs){[-22,22].forEach(o=>feet+=foot(cx+o,G-2))}
+  const capSvg=cap.text?`<text x="${cap.x}" y="${cap.y}" style="font-family:var(--display)" font-weight="800" font-size="${cap.size}" fill="${cap.color}" stroke="${cap.color}" stroke-width="14" stroke-linejoin="round" opacity=".9">${cap.text}</text><text x="${cap.x}" y="${cap.y}" style="font-family:var(--display)" font-weight="800" font-size="${cap.size}" fill="${cap.color}" paint-order="stroke" stroke="#fff" stroke-width="8" stroke-linejoin="round">${cap.text}</text>`:'';
   const grp=(tailBehind?tailSvg:'')+back+body+head+(tailBehind?'':tailSvg)+front+fx;
-  return `<svg viewBox="0 0 320 270" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(${p.lean} ${cx} ${G})">${grp}</g>${feet}${capSvg}</svg>`;
+  const filt=`<filter id="o${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="320" height="270"><feMorphology in="SourceAlpha" operator="dilate" radius="4" result="d"/><feFlood flood-color="#ffffff"/><feComposite in2="d" operator="in" result="wb"/><feMerge><feMergeNode in="wb"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  return `<svg viewBox="0 0 320 270" xmlns="http://www.w3.org/2000/svg"><defs>${filt}</defs><g filter="url(#o${id})"><g transform="rotate(${p.lean} ${cx} ${G})">${grp}</g>${feet}</g>${capSvg}</svg>`;
 }
 
 // ---------- sticker data ----------
@@ -343,7 +359,7 @@ const STK=[
    {d:'手が下がる',p:s8({arms:['wave-down','down']})},
    {ref:1},{ref:2},
    {d:'引っ込んで顔が半分画面の外へ',p:{dx:175,h:100,lean:-6,eyes:'open',mouth:'w'}},
-   {d:'しっぽだけ見えて振る',p:{dx:235,h:100,tail:'long',tailAng:10}},
+   {d:'しっぽだけ見えて振る',p:{dx:215,h:100,tail:'long',tailAng:10}},
    {d:'また身を乗り出して戻ってくる',p:{dx:140,h:100,lean:-14,arms:['upHalf','down'],eyes:'happy',mouth:'smile'}},
    {ref:1}]}
 ];
