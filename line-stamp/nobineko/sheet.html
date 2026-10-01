@@ -1,0 +1,391 @@
+<title>のびねこ制作シート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+/* Layout: production sheet — one row per sticker: live player (true frame timing) + spec + storyboard strip */
+:root{
+  --bg:#eef1f4;--surface:#ffffff;--fg:#23262d;--muted:#5f6672;--line:#d6dbe2;
+  --accent:#06a356;--accent-soft:#dff4e8;--warn:#c2410c;
+  --chk1:#ffffff;--chk2:#e7eaef;
+  --display:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#171a1f;--surface:#21252c;--fg:#e8ebf0;--muted:#a3abb8;--line:#343a44;
+    --accent:#3fd189;--accent-soft:#183a2a;--warn:#fb923c;--chk1:#eceef2;--chk2:#d9dde3;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#171a1f;--surface:#21252c;--fg:#e8ebf0;--muted:#a3abb8;--line:#343a44;
+  --accent:#3fd189;--accent-soft:#183a2a;--warn:#fb923c;--chk1:#eceef2;--chk2:#d9dde3;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:32px 56px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,36px);line-height:1.25;margin:0;text-wrap:balance}
+.lead{margin:6px 0 0;color:var(--muted);max-width:68ch}
+header{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.controls button,.replay{font:inherit;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:7px 16px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:24px;overflow-x:auto}
+.summary table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+.summary th,.summary td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.summary th{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.05em}
+.summary td.num{font-variant-numeric:tabular-nums}
+.new{font-size:11px;font-weight:700;color:var(--warn);border:1.5px solid var(--warn);border-radius:999px;padding:0 7px;margin-left:6px}
+.note{margin:10px 0 0;font-size:13px;color:var(--muted)}
+
+.sticker{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:20px;margin-bottom:18px}
+@media (max-width:760px){.sticker{grid-template-columns:1fr}}
+.player{display:flex;flex-direction:column;gap:8px}
+.frame{position:relative;width:100%;max-width:100%;aspect-ratio:320/270;border-radius:10px;margin-inline:auto;background-color:var(--chk1);
+  background-image:linear-gradient(45deg,var(--chk2) 25%,transparent 25%,transparent 75%,var(--chk2) 75%),linear-gradient(45deg,var(--chk2) 25%,transparent 25%,transparent 75%,var(--chk2) 75%);
+  background-size:20px 20px;background-position:0 0,10px 10px;transition:max-width .25s}
+.frame svg{display:block;width:100%;height:100%}
+body.small .player .frame{max-width:150px}
+.status{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.replay{font-size:13px;padding:4px 12px}
+
+.info{min-width:0;display:flex;flex-direction:column;gap:10px}
+.title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.no{font-family:var(--display);font-weight:800;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.title h2{font-family:var(--display);font-weight:800;font-size:24px;margin:0;line-height:1.3}
+.move{margin:0;font-size:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px}
+.chip{background:var(--accent-soft);border-radius:6px;padding:1px 8px;font-variant-numeric:tabular-nums}
+.chip.ok{font-weight:700}
+
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.cell{display:flex;flex-direction:column;gap:3px;border-radius:10px;padding:4px;border:2px solid transparent}
+.cell.on{border-color:var(--accent)}
+.cell .frame{border-radius:6px}
+.cell .f{font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;display:flex;gap:6px;align-items:center}
+.cell .ref{font-weight:700;font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.cell .d{font-size:11.5px;line-height:1.45;color:var(--muted)}
+footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <h1>のびねこ 制作シート</h1>
+    <p class="lead">8個分のセリフ・動き・フレーム構成です。左のプレビューは、決めたフレーム数・1枚の表示時間・ループ回数どおりに再生しています。再生が終わると少し止まってから最初に戻ります。右の絵コンテで、各フレームの絵を確認できます。</p>
+  </div>
+  <div class="controls" role="group" aria-label="表示切り替え">
+    <button id="btn-size" type="button" aria-pressed="false">トーク画面の大きさで見る</button>
+    <button id="btn-pause" type="button" aria-pressed="false">すべて止める</button>
+  </div>
+</header>
+
+<section class="summary" aria-label="一覧">
+  <table>
+    <thead><tr><th>No.</th><th>セリフ</th><th>動き</th><th>フレーム</th><th>1枚</th><th>ループ</th><th>合計</th><th>描く枚数</th></tr></thead>
+    <tbody id="sum"></tbody>
+  </table>
+  <p class="note">LINEのスタンプは8・16・24個のどれかで申請するため、「OK！」を外して「おめでとう」を入れました。「OK！」も残したい場合は16個セットにする方法があります。</p>
+</section>
+
+<div id="list"></div>
+
+<footer>この絵は動きとタイミングを確認するための下絵です。清書した絵に差し替えても、フレーム構成と再生時間はそのまま使えます。合計再生時間は、どれもLINEの上限である4秒以内です。</footer>
+</div>
+
+<script>
+(function(){
+const OL='#3b2f2f',FUR='#9aa3ad',PAD='#ff9fb4',CHEEK='#ffb3c1',G=250;
+const D={dx:0,h:78,w:92,lean:0,eyes:'open',mouth:'w',ears:'up',arms:['down','down'],tail:'sway',tailAng:0,blush:0,melt:0,headDx:0,headDy:0,flip:false,feet:true,fx:{}};
+const S=(w)=>`stroke="${OL}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" fill="none"`;
+
+function heart(x,y,s){const k=s/40;return `M${x} ${y+16*k} C${x-22*k} ${y+2*k} ${x-20*k} ${y-16*k} ${x-9*k} ${y-16*k} C${x-4*k} ${y-16*k} ${x} ${y-12*k} ${x} ${y-8*k} C${x} ${y-12*k} ${x+4*k} ${y-16*k} ${x+9*k} ${y-16*k} C${x+20*k} ${y-16*k} ${x+22*k} ${y+2*k} ${x} ${y+16*k} Z`}
+function star(x,y,r){const i=r*.38;return `M${x} ${y-r} L${x+i} ${y-i} L${x+r} ${y} L${x+i} ${y+i} L${x} ${y+r} L${x-i} ${y+i} L${x-r} ${y} L${x-i} ${y-i} Z`}
+function drop(x,y){return `M${x} ${y} c-6 9 -8 13 -8 17 a8 8 0 0 0 16 0 c0 -4 -2 -8 -8 -17 Z`}
+
+function eye(type,x,y,side){
+  const outer=x+side*10, inner=x-side*6;
+  const worried=`<path d="M${outer} ${y-13} L${inner} ${y-18}" ${S(3.5)}/>`;
+  const kiri=`<path d="M${outer} ${y-18} L${inner} ${y-12}" ${S(4)}/>`;
+  const dot=(cx,cy,r,hx,hy,hr)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${OL}"/><circle cx="${hx}" cy="${hy}" r="${hr}" fill="#fff"/>`;
+  switch(type){
+    case 'open': return dot(x,y,6.5,x+2,y-2,2);
+    case 'happy': return `<path d="M${x-9} ${y+3} q9 -11 18 0" ${S(4)}/>`;
+    case 'sleep': return `<path d="M${x-9} ${y-1} q9 8 18 0" ${S(4)}/>`;
+    case 'squint': return `<path d="M${x+side*7} ${y-6} l${-side*12} 6 l${side*12} 6" ${S(4)}/>`;
+    case 'half': return `<path d="M${x-8} ${y-1} a8 7 0 0 0 16 0 Z" fill="${OL}"/><path d="M${x-10} ${y-1} h20" ${S(3.5)}/>`;
+    case 'sparkle': return dot(x,y,9,x+3,y-3,3.5)+`<circle cx="${x-3}" cy="${y+3}" r="1.8" fill="#fff"/>`;
+    case 'teary': return dot(x,y,8,x+2.5,y-3,3)+`<circle cx="${x-3}" cy="${y+3}" r="1.6" fill="#fff"/><path d="M${x-9} ${y+8} q9 5 18 0" fill="none" stroke="#5fb4f0" stroke-width="3" stroke-linecap="round"/>`+worried;
+    case 'lookup': return dot(x,y-2,7.5,x+1,y-6,3)+worried;
+    case 'glance': return dot(x+3,y,6.5,x+5,y-2,2)+worried;
+    case 'kiri': return dot(x,y,6.5,x+2,y-2,2)+kiri;
+  }
+  return '';
+}
+function eyes(type,hx,hy){
+  const pair={oneopen:['sleep','open'],wink:['open','happy']}[type]||[type,type];
+  return eye(pair[0],hx-24,hy-2,-1)+eye(pair[1],hx+24,hy-2,1);
+}
+function mouth(type,hx,hy){
+  const y=hy+14,nose=`<ellipse cx="${hx}" cy="${hy+8}" rx="4.5" ry="3.5" fill="#ff7f9f"/>`;
+  switch(type){
+    case 'w': return nose+`<path d="M${hx-10} ${y+1} q5 6 10 0 q5 6 10 0" ${S(3.5)}/>`;
+    case 'smile': return `<path d="M${hx-10} ${y+1} q10 15 20 0 Z" fill="#e05a6d" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/>`+nose;
+    case 'yawn': return `<ellipse cx="${hx}" cy="${y+8}" rx="9" ry="12" fill="#6b2b33" stroke="${OL}" stroke-width="3.5"/><ellipse cx="${hx}" cy="${y+14}" rx="5" ry="4" fill="#ff8fa3"/>`+nose;
+    case 'small': return nose+`<path d="M${hx-4} ${y+3} h8" ${S(3.5)}/>`;
+    case 'sad': return nose+`<path d="M${hx-8} ${y+8} q8 -7 16 0" ${S(3.5)}/>`;
+    case 'fu': return nose+`<circle cx="${hx}" cy="${y+6}" r="4" ${S(3.5)}/>`;
+  }
+  return nose;
+}
+const RAISED=new Set(['up','upHalf','clap-open','clap-closed','wave-up','popper','forward']);
+function armEnd(t,s,sh,c){
+  switch(t){
+    case 'down': return [sh[0]+s*10,sh[1]+32];
+    case 'upHalf': return [sh[0]+s*32,sh[1]-34];
+    case 'up': return [sh[0]+s*30,sh[1]-70];
+    case 'salute': return [c.hx+s*34,c.hy-24];
+    case 'wave-up': return [sh[0]+s*32,sh[1]-60];
+    case 'wave-down': return [sh[0]+s*50,sh[1]-14];
+    case 'front': return [c.cx+s*18,c.top+40];
+    case 'forward': return [sh[0]-55,G-16];
+    case 'clap-open': return [c.cx+s*30,c.hy-62];
+    case 'clap-closed': return [c.cx+s*8,c.hy-66];
+    case 'popper': return [sh[0]+s*34,sh[1]-46];
+    case 'popperReady': return [c.cx+s*12,c.top+22];
+  }
+  return null;
+}
+function arm(sh,e){return `<path d="M${sh[0]} ${sh[1]} L${e[0]} ${e[1]}" stroke="${OL}" stroke-width="21" stroke-linecap="round" fill="none"/><path d="M${sh[0]} ${sh[1]} L${e[0]} ${e[1]}" stroke="${FUR}" stroke-width="12" stroke-linecap="round" fill="none"/>`}
+function tailPath(type,bx,by,tS,c){
+  switch(type){
+    case 'sway': return `M${bx} ${by} q${tS*40} -6 ${tS*36} -44 q-2 -14 ${tS*10} -20`;
+    case 'long': return `M${bx} ${by} q${tS*70} -10 ${tS*76} -64 q0 -14 ${tS*12} -20`;
+    case 'up': return `M${bx} ${by} q${tS*30} -10 ${tS*26} -90`;
+    case 'down': return `M${bx} ${by} q${tS*40} 10 ${tS*70} 4`;
+    case 'flat': return `M${bx} ${by} q${tS*30} 2 ${tS*62} -2`;
+    case 'twitch': return `M${bx} ${by} q${tS*30} 2 ${tS*46} -28`;
+    case 'curl': return `M${bx} ${by} Q${bx+tS*30} ${G+2} ${bx-tS*30} ${G-2} T${c.cx-tS*(c.w/2-6)} ${G-12}`;
+    case 'heart': case 'circle': return `M${bx} ${by} q${tS*30} -10 ${tS*24} -64`;
+    case 'front': return `M${bx} ${by} Q${c.cx+tS*c.w*.7} ${c.hy+44} ${c.hx-tS*8} ${c.hy+22}`;
+  }
+  return '';
+}
+function tail(type,ang,bx,by,tS,c){
+  const d=tailPath(type,bx,by,tS,c);
+  let s=`<path d="${d}" stroke="${OL}" stroke-width="18" stroke-linecap="round" fill="none"/><path d="${d}" stroke="${FUR}" stroke-width="9" stroke-linecap="round" fill="none"/>`;
+  if(type==='heart'){const x=bx+tS*24,y=by-86;s+=`<path d="${heart(x,y,40)}" stroke="${OL}" stroke-width="18" fill="none" stroke-linejoin="round"/><path d="${heart(x,y,40)}" stroke="${FUR}" stroke-width="9" fill="none" stroke-linejoin="round"/>`}
+  if(type==='circle'){const x=bx+tS*24,y=by-86;s+=`<circle cx="${x}" cy="${y}" r="20" stroke="${OL}" stroke-width="18" fill="none"/><circle cx="${x}" cy="${y}" r="20" stroke="${FUR}" stroke-width="9" fill="none"/>`}
+  return ang?`<g transform="rotate(${ang} ${bx} ${by})">${s}</g>`:s;
+}
+const CONF=['#ff6b6b','#ffd23f','#4dabf7','#69db7c','#da77f2'];
+function confetti(o,t){
+  let s='';
+  for(let i=0;i<16;i++){
+    const a=(-165+i*(150/15))*Math.PI/180, v=.7+((i*37)%10)/20, tt=t;
+    const x=o[0]+Math.cos(a)*v*170*tt, y=o[1]+Math.sin(a)*v*170*tt+150*tt*tt;
+    const r=(i*53+t*360)%360;
+    s+=`<rect x="${(x-4.5).toFixed(1)}" y="${(y-2.5).toFixed(1)}" width="9" height="5" rx="1" fill="${CONF[i%5]}" transform="rotate(${r.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+  }
+  return s;
+}
+
+function cat(p,cap){
+  p=Object.assign({},D,p);
+  const m=p.melt, w=p.w+m*110, h=Math.max(22,p.h-m*56), cx=160+p.dx, bottom=G-6, top=bottom-h;
+  const hrx=54+m*8, hry=46-m*12, hx=cx+(p.lie?-(w/2)+40:p.headDx), hy=top-26+m*18+(p.lie?20:p.headDy), kx=hrx/54;
+  const c={cx,top,w,hx,hy};
+  const tS=p.flip?-1:1, bx=cx+tS*(w/2-10), by=G-16;
+  const noLimbs=m>.3;
+  const arms=noLimbs?['none','none']:p.arms;
+  const shL=[cx-w/2+10,top+16], shR=[cx+w/2-10,top+16];
+  let back='',front='',fx='';
+  // popper geometry
+  let popMouth=null;
+  [[arms[0],-1,shL],[arms[1],1,shR]].forEach(([t,s,sh])=>{
+    const e=armEnd(t,s,sh,c); if(!e) return;
+    let piece=arm(sh,e);
+    if(t==='popper'||t==='popperReady'){
+      const ang=(t==='popper'?-55:-80)*Math.PI/180, L=42, ux=Math.cos(ang), uy=Math.sin(ang), nx=-uy, ny=ux;
+      const mx=e[0]+ux*L, my=e[1]+uy*L; popMouth=[mx,my];
+      piece+=`<path d="M${e[0]+nx*4} ${e[1]+ny*4} L${mx+nx*15} ${my+ny*15} L${mx-nx*15} ${my-ny*15} L${e[0]-nx*4} ${e[1]-ny*4} Z" fill="#ffd23f" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/><path d="M${e[0]+ux*20+nx*9} ${e[1]+uy*20+ny*9} L${e[0]+ux*20-nx*9} ${e[1]+uy*20-ny*9}" stroke="#ff6b6b" stroke-width="5"/>`;
+    }
+    if(RAISED.has(t)) back+=piece; else front+=piece;
+  });
+  const tailT=noLimbs&&!['flat','twitch'].includes(p.tail)?'flat':p.tail;
+  const tailBehind=!['curl','front'].includes(tailT);
+  const tailSvg=tail(tailT,p.tailAng,bx,by,tS,c);
+  // ears
+  const ear=(s)=>{
+    if(p.ears==='down'){
+      const pts=[[hx+s*50*kx,hy-hry*.4],[hx+s*82*kx,hy-hry*.85],[hx+s*28*kx,hy-hry*.95]];
+      return earPoly(pts);
+    }
+    return earPoly([[hx+s*46*kx,hy-hry*.55],[hx+s*40*kx,hy-hry-22],[hx+s*12*kx,hy-hry*.9]]);
+  };
+  function earPoly(pts){
+    const cx_=(pts[0][0]+pts[1][0]+pts[2][0])/3, cy_=(pts[0][1]+pts[1][1]+pts[2][1])/3;
+    const inner=pts.map(([x,y])=>[cx_+(x-cx_)*.55,cy_+(y-cy_)*.55+3]);
+    const f=a=>a.map(q=>q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' L');
+    return `<path d="M${f(pts)} Z" fill="${FUR}" stroke="${OL}" stroke-width="5" stroke-linejoin="round"/><path d="M${f(inner)} Z" fill="${PAD}"/>`;
+  }
+  let body=`<rect x="${cx-w/2}" y="${top}" width="${w}" height="${h}" rx="${Math.min(w,h)/2}" fill="${FUR}" stroke="${OL}" stroke-width="5"/>`;
+  if(h>=44&&m<.4&&!p.lie) body+=`<rect x="${cx-w*.25}" y="${top+12}" width="${w*.5}" height="${h-20}" rx="${Math.min(w*.25,(h-20)/2)}" fill="#fff"/>`;
+  let head=ear(-1)+ear(1)+`<ellipse cx="${hx}" cy="${hy}" rx="${hrx}" ry="${hry}" fill="${FUR}" stroke="${OL}" stroke-width="5"/>`;
+  head+=`<ellipse cx="${hx-36}" cy="${hy+10}" rx="9" ry="5" fill="${CHEEK}"/><ellipse cx="${hx+36}" cy="${hy+10}" rx="9" ry="5" fill="${CHEEK}"/>`;
+  if(p.blush) head+=`<path d="M${hx-42} ${hy+7} l-3 6 M${hx-36} ${hy+7} l-3 6 M${hx+36} ${hy+7} l-3 6 M${hx+42} ${hy+7} l-3 6" ${S(2)}/>`;
+  head+=`<path d="M${hx-hrx+4} ${hy+4} h-20 M${hx-hrx+4} ${hy+12} l-18 6 M${hx+hrx-4} ${hy+4} h20 M${hx+hrx-4} ${hy+12} l18 6" ${S(3)}/>`;
+  head+=eyes(p.eyes,hx,hy)+mouth(p.mouth,hx,hy);
+  const f=p.fx||{};
+  if(f.bigHeart) fx+=`<path d="${heart(cx,top+40,f.bigHeart*1.6)}" fill="#ff8fa3" stroke="${OL}" stroke-width="3.5" stroke-linejoin="round"/>`;
+  (f.hearts||[]).forEach(([x,y,s])=>fx+=`<path d="${heart(x,y,s*1.4)}" fill="#ff8fa3" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/>`);
+  (f.stars||[]).forEach(([x,y,r])=>fx+=`<path d="${star(x,y,r)}" fill="#ffd23f" stroke="${OL}" stroke-width="2.5" stroke-linejoin="round"/>`);
+  if(f.kira) fx+=`<path d="${star(hx+46,hy-34,13)}" fill="#ffd23f" stroke="${OL}" stroke-width="2.5" stroke-linejoin="round"/><path d="${star(hx+64,hy-12,7)}" fill="#ffd23f" stroke="${OL}" stroke-width="2" stroke-linejoin="round"/>`;
+  (f.tears||[]).forEach(t=>fx+=`<path d="${drop(hx+t.side*24,hy+t.y)}" fill="#9ed8ff" stroke="${OL}" stroke-width="3"/>`);
+  if(f.zzz) fx+=`<text x="${hx+40}" y="${hy-40}" style="font-family:var(--display)" font-weight="800" font-size="24" fill="#4a7fa8" paint-order="stroke" stroke="#fff" stroke-width="6">Z</text><text x="${hx+62}" y="${hy-62}" style="font-family:var(--display)" font-weight="800" font-size="18" fill="#4a7fa8" paint-order="stroke" stroke="#fff" stroke-width="6">z</text>`;
+  if(f.breath) fx+=`<text x="${hx+46}" y="${hy-34}" style="font-family:var(--display)" font-weight="800" font-size="20" fill="#7048e8" paint-order="stroke" stroke="#fff" stroke-width="6">${f.breath}</text>`;
+  if(f.confetti!=null){const o=f.o||popMouth; if(o) fx+=confetti(o,f.confetti)}
+  if(f.bang&&popMouth){const [x,y]=popMouth;[[-20,-14],[-6,-24],[12,-22],[24,-8]].forEach(([a,b])=>fx+=`<path d="M${x+a*.6} ${y+b*.6} l${a*.7} ${b*.7}" ${S(4)}/>`)}
+  let feet='';
+  if(p.lie) feet+=`<ellipse cx="${cx+w/2+2}" cy="${G-4}" rx="18" ry="9" fill="${FUR}" stroke="${OL}" stroke-width="5"/><ellipse cx="${cx+w/2+8}" cy="${G-4}" rx="5" ry="4" fill="${PAD}"/>`;
+  if(p.feet&&!noLimbs){[-22,22].forEach(o=>feet+=`<ellipse cx="${cx+o}" cy="${G-2}" rx="17" ry="9" fill="${FUR}" stroke="${OL}" stroke-width="5"/><ellipse cx="${cx+o}" cy="${G}" rx="6" ry="4" fill="${PAD}"/>`)}
+  const capSvg=`<text x="${cap.x}" y="${cap.y}" style="font-family:var(--display)" font-weight="800" font-size="${cap.size}" fill="${cap.color}" paint-order="stroke" stroke="#fff" stroke-width="9" stroke-linejoin="round">${cap.text}</text>`;
+  const grp=(tailBehind?tailSvg:'')+back+body+head+(tailBehind?'':tailSvg)+front+fx;
+  return `<svg viewBox="0 0 320 270" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(${p.lean} ${cx} ${G})">${grp}</g>${feet}${capSvg}</svg>`;
+}
+
+// ---------- sticker data ----------
+const X=(base,extra)=>Object.assign({},base,extra);
+const s1F1={h:132,arms:['up','up'],eyes:'happy',mouth:'smile',tail:'up'};
+const s1F3={h:54,w:118,arms:['none','none'],eyes:'sleep',mouth:'small',tail:'curl',feet:false,fx:{zzz:true}};
+const s3F1={h:132,arms:['down','salute'],eyes:'kiri',mouth:'smile',tail:'up'};
+const s6F1={h:132,arms:['up','popper'],eyes:'happy',mouth:'smile',tail:'up',fx:{confetti:.75}};
+const lie=(w,h,o)=>X({lie:true,w,h,arms:['forward','none'],tail:'up',feet:false},o);
+const s7=(h,a,stars)=>({h,arms:[a,a],eyes:'sparkle',mouth:'smile',tail:'up',fx:{stars:stars||[]}});
+const s8=(o)=>X({dx:100,h:100,lean:-12,eyes:'wink',mouth:'smile'},o);
+const STK=[
+ {t:'おはよう！',move:'丸まって寝ていた状態から起き上がり、のびーっと伸びてあくび',delay:.12,loops:2,base:{dx:48},cap:{x:14,y:46,size:30,color:'#e8590c'},
+  frames:[
+   {d:'両手を上げて最大まで伸び、にっこり（1枚目の顔）',p:s1F1},
+   {d:'少し縮む',p:{h:110,arms:['upHalf','upHalf'],eyes:'happy',mouth:'w',tail:'up'}},
+   {d:'丸まって寝ている',p:s1F3},
+   {d:'片目を開ける',p:X(s1F3,{eyes:'oneopen',fx:{}})},
+   {d:'前足を出して前のび',p:{h:52,w:150,headDx:-46,headDy:14,arms:['forward','forward'],eyes:'squint',mouth:'yawn',tail:'up',feet:false}},
+   {d:'起き上がる',p:{h:84,eyes:'half',mouth:'small'}},
+   {d:'上に半分のびる',p:{h:108,arms:['upHalf','upHalf'],eyes:'squint',mouth:'w'}},
+   {d:'最大まで伸びてあくび',p:{h:132,arms:['up','up'],eyes:'sleep',mouth:'yawn',tail:'up'}},
+   {d:'あくびを閉じる',p:{h:132,arms:['up','up'],eyes:'squint',mouth:'w',tail:'up'}},
+   {ref:1}]},
+ {t:'ありがとう',move:'胴を前に伸ばしてハートを差し出し、ハートが浮かんでいく',delay:.12,loops:3,base:{dx:30},cap:{x:14,y:46,size:30,color:'#e64980'},
+  frames:[
+   {d:'両手でハートを差し出す（1枚目の顔）',p:{h:96,arms:['front','front'],eyes:'happy',mouth:'smile',blush:1,fx:{bigHeart:30}}},
+   {d:'縮んでハートを抱える',p:{h:70,arms:['front','front'],eyes:'happy',mouth:'w',blush:1,fx:{bigHeart:24}}},
+   {d:'伸び始める',p:{h:84,arms:['front','front'],eyes:'happy',mouth:'w',blush:1,fx:{bigHeart:27}}},
+   {ref:1},
+   {d:'ハートがふわっと浮く',p:{h:96,arms:['front','front'],eyes:'happy',mouth:'smile',blush:1,fx:{hearts:[[262,128,30]]}}},
+   {d:'しっぽがハートの形に',p:{h:96,eyes:'happy',mouth:'smile',blush:1,tail:'heart',fx:{hearts:[[200,60,24]]}}},
+   {d:'ほっぺを赤くしてにっこり',p:{h:96,eyes:'happy',mouth:'smile',blush:1,tail:'heart',fx:{hearts:[[120,110,16],[270,70,18]]}}},
+   {ref:1}]},
+ {t:'了解！',move:'びよーんと伸びて敬礼。ためて、つぶれて、また伸びる',delay:.1,loops:4,base:{dx:45},cap:{x:14,y:50,size:34,color:'#5c6b7a'},
+  frames:[
+   {d:'最大まで伸びて敬礼（1枚目の顔）',p:s3F1},
+   {d:'縮んでためる',p:{h:68,w:102,eyes:'squint',mouth:'w'}},
+   {d:'ぺたんとつぶれる',p:{h:52,w:112,eyes:'squint',mouth:'small'}},
+   {d:'半分伸びて敬礼',p:{h:100,arms:['down','salute'],eyes:'kiri',mouth:'w',tail:'up'}},
+   {ref:1},
+   {d:'敬礼のまま少し揺れる',p:X(s3F1,{lean:4})},
+   {d:'目元にキラッ',p:X(s3F1,{fx:{kira:true}})},
+   {ref:1}]},
+ {t:'おつかれさま',move:'座った姿から前に伏せ、前足と後ろ足を伸ばして横にびよーんと伸び、ぐでーっとなる',delay:.15,loops:2,base:{dx:25},cap:{x:14,y:50,size:28,color:'#7048e8'},
+  frames:[
+   {d:'横に長く伸びてぐでーっ（1枚目の顔）',p:lie(200,46,{eyes:'sleep',mouth:'w'})},
+   {d:'普通に座っている',p:{h:72,w:100,eyes:'half',mouth:'small'}},
+   {d:'前に伏せる',p:lie(120,56,{arms:['none','none'],eyes:'half',mouth:'small'})},
+   {d:'前足を前に出す',p:lie(140,52,{eyes:'half',mouth:'small'})},
+   {d:'横に伸び始めてあくび',p:lie(170,48,{eyes:'squint',mouth:'yawn'})},
+   {d:'最大まで横にのびーっ',p:lie(210,42,{eyes:'squint',mouth:'w'})},
+   {ref:1},
+   {d:'「ふぅ〜」と息を吐く',p:lie(200,46,{eyes:'sleep',mouth:'fu',fx:{breath:'ふぅ〜'}})},
+   {d:'しっぽだけぴくっ',p:lie(200,46,{eyes:'sleep',mouth:'w',tailAng:-18})},
+   {ref:1}]},
+ {t:'ごめんなさい',move:'小さく丸くなり、耳を伏せて涙目。しっぽで顔を隠す',delay:.15,loops:3,base:{dx:25},cap:{x:14,y:46,size:28,color:'#1c7ed6'},
+  frames:[
+   {d:'丸くなって耳ぺたん、しっぽで口元を隠す（1枚目の顔）',p:{h:56,w:104,ears:'down',eyes:'teary',mouth:'sad',tail:'front',arms:['none','none'],fx:{tears:[{side:-1,y:8}]}}},
+   {d:'さらに小さく縮む',p:{h:46,w:100,ears:'down',eyes:'teary',mouth:'sad',tail:'front',arms:['none','none'],fx:{tears:[{side:1,y:10}]}}},
+   {d:'上目づかいで見上げる',p:{h:56,w:104,ears:'down',eyes:'lookup',mouth:'sad',tail:'front',arms:['none','none']}},
+   {d:'涙がぽろり',p:{h:56,w:104,ears:'down',eyes:'teary',mouth:'sad',tail:'front',arms:['none','none'],fx:{tears:[{side:-1,y:30}]}}},
+   {d:'しっぽがしゅんと下がる',p:{h:56,w:104,ears:'down',eyes:'teary',mouth:'sad',tail:'down',arms:['none','none']}},
+   {ref:2},
+   {d:'ちらっとこちらを見る',p:{h:56,w:104,ears:'down',eyes:'glance',mouth:'sad',tail:'front',arms:['none','none']}},
+   {ref:1}],isNew:false},
+ {t:'おめでとう',move:'縮んでクラッカーを構え、伸びながらパーン！ 紙吹雪の中でバンザイ',delay:.1,loops:3,base:{dx:30},cap:{x:14,y:46,size:30,color:'#d6336c'},isNew:true,
+  frames:[
+   {d:'伸びてクラッカーを鳴らし、紙吹雪が舞う（1枚目の顔）',p:s6F1},
+   {d:'縮んでクラッカーを構える',p:{h:66,w:104,arms:['down','popperReady'],eyes:'open',mouth:'w'}},
+   {d:'目をぎゅっとつぶってひもを引く',p:{h:62,w:106,arms:['down','popperReady'],eyes:'squint',mouth:'small'}},
+   {d:'パーン！ 伸び始める',p:{h:100,arms:['up','popper'],eyes:'sparkle',mouth:'smile',fx:{confetti:.25,bang:true}}},
+   {d:'最大まで伸び、紙吹雪が広がる',p:{h:132,arms:['up','popper'],eyes:'sparkle',mouth:'smile',tail:'up',fx:{confetti:.5}}},
+   {d:'紙吹雪が落ちてくる',p:X(s6F1,{fx:{confetti:1}})},
+   {d:'両手を上げてバンザイ',p:{h:132,arms:['up','up'],eyes:'happy',mouth:'smile',tail:'up',fx:{confetti:1.25,o:[286,48]}}},
+   {d:'紙吹雪が落ちきる',p:{h:120,arms:['up','up'],eyes:'happy',mouth:'w',tail:'up',fx:{confetti:1.5,o:[286,60]}}},
+   {ref:1}]},
+ {t:'すごい！',move:'目をキラキラさせ、胴を伸ばしながら頭の上で拍手',delay:.08,loops:4,base:{dx:45},cap:{x:14,y:46,size:32,color:'#f08c00'},
+  frames:[
+   {d:'目キラキラで手を開く。周りに星（1枚目の顔）',p:s7(115,'clap-open',[[56,130,14],[300,150,12],[90,206,10]])},
+   {d:'手を合わせる',p:s7(115,'clap-closed')},
+   {d:'手を開く',p:s7(115,'clap-open')},
+   {ref:2},{ref:3},
+   {d:'さらに伸びて手を合わせる',p:s7(125,'clap-closed')},
+   {d:'最大まで伸び、星が増える',p:s7(132,'clap-open',[[56,120,16],[300,140,14],[86,200,12],[300,40,10]])},
+   {ref:6},
+   {d:'縮んで手を合わせる',p:s7(105,'clap-closed')},
+   {ref:1}]},
+ {t:'またね！',move:'画面の右端から身を乗り出して手を振り、引っ込んでしっぽだけ振る',delay:.12,loops:3,base:{flip:true},cap:{x:14,y:46,size:32,color:'#2f9e44'},
+  frames:[
+   {d:'右端から身を乗り出して手を振る（1枚目の顔）',p:s8({arms:['wave-up','down']})},
+   {d:'手が下がる',p:s8({arms:['wave-down','down']})},
+   {ref:1},{ref:2},
+   {d:'引っ込んで顔が半分画面の外へ',p:{dx:175,h:100,lean:-6,eyes:'open',mouth:'w'}},
+   {d:'しっぽだけ見えて振る',p:{dx:235,h:100,tail:'long',tailAng:10}},
+   {d:'また身を乗り出して戻ってくる',p:{dx:140,h:100,lean:-14,arms:['upHalf','down'],eyes:'happy',mouth:'smile'}},
+   {ref:1}]}
+];
+
+// ---------- render ----------
+const list=document.getElementById('list'), sum=document.getElementById('sum');
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const players=[];
+STK.forEach((s,si)=>{
+  const svgs=s.frames.map(f=>f.ref?null:cat(X(s.base,f.p),Object.assign({text:s.t},s.cap)));
+  const seq=s.frames.map((f,i)=>f.ref?svgs[f.ref-1]:svgs[i]);
+  const n=s.frames.length, unique=s.frames.filter(f=>!f.ref).length, total=+(n*s.delay*s.loops).toFixed(2);
+  const no=String(si+1).padStart(2,'0');
+  sum.insertAdjacentHTML('beforeend',`<tr><td class="num">${no}</td><td>${s.t}${s.isNew?'<span class="new">追加</span>':''}</td><td>${s.move.split('、')[0]}</td><td class="num">${n}枚</td><td class="num">${s.delay}秒</td><td class="num">${s.loops}回</td><td class="num">${total}秒</td><td class="num">${unique}枚</td></tr>`);
+  const cells=s.frames.map((f,i)=>`<div class="cell" data-i="${i}"><div class="frame">${seq[i]}</div><div class="f">F${i+1}${f.ref?`<span class="ref">＝F${f.ref}</span>`:''}</div><div class="d">${f.ref?'同じ画像を使う':f.d}</div></div>`).join('');
+  const sec=document.createElement('section');
+  sec.className='sticker';
+  sec.innerHTML=`<div class="player"><div class="frame" role="img" aria-label="${s.t}のプレビュー">${seq[0]}</div>
+    <div class="status"><span class="st">F1 / ${n}</span><button class="replay" type="button">もう一度再生</button></div></div>
+    <div class="info"><div class="title"><span class="no">${no}</span><h2>${s.t}</h2>${s.isNew?'<span class="new">追加</span>':''}</div>
+    <p class="move">${s.move}</p>
+    <div class="chips"><span class="chip">${n}フレーム</span><span class="chip">1枚 ${s.delay}秒</span><span class="chip">${s.loops}ループ</span><span class="chip ok">合計 ${total}秒（4秒以内）</span><span class="chip">描く枚数 ${unique}枚</span></div>
+    <div class="strip">${cells}</div></div>`;
+  list.appendChild(sec);
+  const view=sec.querySelector('.player .frame'), st=sec.querySelector('.st'), cellEls=[...sec.querySelectorAll('.cell')];
+  const pl={i:0,loop:0,timer:null};
+  function show(i){view.innerHTML=seq[i];cellEls.forEach((c,k)=>c.classList.toggle('on',k===i));st.textContent=`F${i+1} / ${n}　${pl.loop+1}周目 / ${s.loops}`}
+  function tick(){
+    if(document.body.classList.contains('paused')){pl.timer=setTimeout(tick,200);return}
+    pl.i++;
+    if(pl.i>=n){pl.loop++;
+      if(pl.loop>=s.loops){pl.loop=s.loops-1;pl.i=n-1;show(pl.i);st.textContent=`再生終了（${total}秒）`;pl.timer=setTimeout(start,1400);return}
+      pl.i=0}
+    show(pl.i);pl.timer=setTimeout(tick,s.delay*1000);
+  }
+  function start(){clearTimeout(pl.timer);pl.i=0;pl.loop=0;show(0);pl.timer=setTimeout(tick,s.delay*1000)}
+  sec.querySelector('.replay').addEventListener('click',start);
+  if(reduce){show(0);st.textContent=`F1 / ${n}（「もう一度再生」で動きます）`}else start();
+});
+
+const size=document.getElementById('btn-size'),pause=document.getElementById('btn-pause');
+size.addEventListener('click',()=>{const on=document.body.classList.toggle('small');size.setAttribute('aria-pressed',on);size.textContent=on?'大きく見る':'トーク画面の大きさで見る'});
+pause.addEventListener('click',()=>{const on=document.body.classList.toggle('paused');pause.setAttribute('aria-pressed',on);pause.textContent=on?'再生する':'すべて止める'});
+})();
+</script>
